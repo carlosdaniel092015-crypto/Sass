@@ -8,9 +8,9 @@ Environment Variables**, y luego haz **Redeploy**.
 
 ## 1) Stripe (cobro mensual)
 
-1. Crea un **producto** con precio **recurrente mensual** (ej: $29 USD/mes).
+1. Crea **un producto por plan** con precio **recurrente mensual**:
    - Stripe Dashboard → *Products* → *Add product* → *Recurring* → *Monthly*.
-   - Copia el **Price ID** (empieza con `price_...`).
+   - Starter ($19), Pro ($29) y Business ($79). Copia el **Price ID** (`price_...`) de cada uno.
 2. Copia tu **Secret Key** (*Developers → API keys*, empieza con `sk_live_...` o `sk_test_...`).
 3. Crea el **webhook**:
    - *Developers → Webhooks → Add endpoint*.
@@ -22,10 +22,13 @@ Environment Variables**, y luego haz **Redeploy**.
 **Variables a poner en Vercel:**
 ```
 STRIPE_SECRET_KEY=sk_live_...
-STRIPE_PRICE_ID=price_...
 STRIPE_WEBHOOK_SECRET=whsec_...
+STRIPE_PRICE_STARTER=price_...
+STRIPE_PRICE_PRO=price_...
+STRIPE_PRICE_BUSINESS=price_...
 PUBLIC_BASE_URL=https://sass-zeta-gold.vercel.app
 ```
+> Si solo configuras un plan, define `STRIPE_PRICE_ID` y todos caerán a ese precio.
 
 > 🔐 La Secret Key es sensible: ponla **solo** en Vercel (nunca en el código ni en Git).
 

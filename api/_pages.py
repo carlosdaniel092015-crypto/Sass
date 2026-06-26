@@ -104,16 +104,20 @@ _HEAD = """
     .step h3{font-size:18px;margin-bottom:8px}.step p{color:var(--muted);font-size:15px}
 
     /* PRICING */
-    .price-wrap{max-width:440px;margin:0 auto}
-    .price-card{background:linear-gradient(180deg,var(--panel),var(--bg2));border:1px solid rgba(34,197,94,.35);
-      border-radius:24px;padding:40px 34px;text-align:center;position:relative;
-      box-shadow:0 30px 70px -30px rgba(34,197,94,.4)}
+    .plans{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;align-items:stretch}
+    @media(max-width:880px){.plans{grid-template-columns:1fr;max-width:440px;margin:0 auto}}
+    .price-card{background:linear-gradient(180deg,var(--panel),var(--bg2));border:1px solid var(--line);
+      border-radius:24px;padding:36px 30px;text-align:center;position:relative;display:flex;flex-direction:column}
+    .price-card.feat{border-color:rgba(34,197,94,.5);box-shadow:0 30px 70px -30px rgba(34,197,94,.45);
+      transform:scale(1.03)}
+    @media(max-width:880px){.price-card.feat{transform:none}}
     .pill{position:absolute;top:-14px;left:50%;transform:translateX(-50%);background:linear-gradient(120deg,var(--brand),var(--brand2));
       color:#03130b;font-weight:700;font-size:12px;padding:6px 16px;border-radius:999px}
-    .amount{font-size:60px;font-weight:900;letter-spacing:-2px;margin:10px 0 2px}
-    .amount span{font-size:18px;color:var(--muted);font-weight:500}
-    .plist{list-style:none;text-align:left;margin:26px 0}
-    .plist li{padding:10px 0 10px 30px;position:relative;color:#cdd6ea}
+    .pname{color:var(--muted);font-weight:600;font-size:15px}
+    .amount{font-size:50px;font-weight:900;letter-spacing:-2px;margin:8px 0 2px}
+    .amount span{font-size:16px;color:var(--muted);font-weight:500}
+    .plist{list-style:none;text-align:left;margin:22px 0;flex:1}
+    .plist li{padding:9px 0 9px 28px;position:relative;color:#cdd6ea;font-size:14.5px}
     .plist li::before{content:"✓";position:absolute;left:0;color:var(--brand);font-weight:800}
     .pn{color:var(--muted);font-size:13px;margin-top:16px}
 
@@ -238,24 +242,53 @@ LANDING_HTML = """<!doctype html>
   </div></section>
 
   <section id="pricing"><div class="container">
-    <p class="eyebrow">Precio único</p>
-    <h2 class="h2">Sin letra pequeña</h2>
-    <p class="sub">Un plan, todo incluido. Cancela cuando quieras desde tu WhatsApp.</p>
-    <div class="price-wrap"><div class="price-card">
-      <span class="pill">MÁS POPULAR</span>
-      <div style="color:var(--muted);font-weight:600">Plan Pro</div>
-      <div class="amount">$29<span> USD/mes</span></div>
-      <ul class="plist">
-        <li>Bot de WhatsApp con IA, ilimitado</li>
-        <li>Integración oficial con YCloud</li>
-        <li>Workflow n8n personalizable</li>
-        <li>Cobro recurrente automático</li>
-        <li>Desactivación automática por impago</li>
-        <li>Soporte por WhatsApp</li>
-      </ul>
-      <button class="btn btn-primary" style="width:100%" onclick="openModal()">Suscribirme y activar mi bot</button>
-      <p class="pn">Pago seguro con Stripe · Tarjeta de crédito o débito</p>
-    </div></div>
+    <p class="eyebrow">Planes</p>
+    <h2 class="h2">Elige tu plan</h2>
+    <p class="sub">Todos incluyen cobro automático y apagado por impago. Cancela cuando quieras.</p>
+    <div class="plans">
+
+      <div class="price-card">
+        <div class="pname">Starter</div>
+        <div class="amount">$19<span> USD/mes</span></div>
+        <ul class="plist">
+          <li>1 bot de WhatsApp</li>
+          <li>Hasta 1.000 mensajes/mes</li>
+          <li>Respuestas automáticas</li>
+          <li>Integración con YCloud</li>
+          <li>Soporte por email</li>
+        </ul>
+        <button class="btn btn-ghost" style="width:100%" onclick="openModal('starter')">Elegir Starter</button>
+      </div>
+
+      <div class="price-card feat">
+        <span class="pill">MÁS POPULAR</span>
+        <div class="pname">Pro</div>
+        <div class="amount">$29<span> USD/mes</span></div>
+        <ul class="plist">
+          <li>Bot de WhatsApp <b>ilimitado</b></li>
+          <li>Respuestas con IA</li>
+          <li>Workflow n8n personalizable</li>
+          <li>Desactivación automática por impago</li>
+          <li>Soporte por WhatsApp</li>
+        </ul>
+        <button class="btn btn-primary" style="width:100%" onclick="openModal('pro')">Elegir Pro</button>
+      </div>
+
+      <div class="price-card">
+        <div class="pname">Business</div>
+        <div class="amount">$79<span> USD/mes</span></div>
+        <ul class="plist">
+          <li><b>Hasta 5 bots</b> de WhatsApp</li>
+          <li>IA avanzada + base de conocimiento</li>
+          <li>Integraciones a medida (CRM, Sheets…)</li>
+          <li>Reportes y métricas</li>
+          <li>Soporte prioritario</li>
+        </ul>
+        <button class="btn btn-ghost" style="width:100%" onclick="openModal('business')">Elegir Business</button>
+      </div>
+
+    </div>
+    <p class="pn" style="text-align:center;margin-top:24px">Pago seguro con Stripe · Tarjeta de crédito o débito</p>
   </div></section>
 
   <section id="faq" style="background:var(--bg2)"><div class="container">
@@ -289,7 +322,7 @@ LANDING_HTML = """<!doctype html>
     <div class="modal-card">
       <span class="x" onclick="closeModal()">×</span>
       <h3>Activa tu bot 🚀</h3>
-      <p>Escribe tu correo y te llevamos al pago seguro de Stripe.</p>
+      <p>Plan seleccionado: <b id="planLabel">Pro</b>. Escribe tu correo y te llevamos al pago seguro de Stripe.</p>
       <form id="subForm">
         <input type="email" id="email" placeholder="tu@correo.com" required>
         <button class="btn btn-primary" style="width:100%" type="submit" id="subBtn">Ir al pago seguro →</button>
@@ -300,7 +333,14 @@ LANDING_HTML = """<!doctype html>
 
   <script>
     const modal=document.getElementById('modal');
-    function openModal(){modal.classList.add('show');setTimeout(()=>document.getElementById('email').focus(),50)}
+    const PLAN_NAMES={starter:'Starter',pro:'Pro',business:'Business'};
+    let selectedPlan='pro';
+    function openModal(plan){
+      selectedPlan=plan||'pro';
+      document.getElementById('planLabel').textContent=PLAN_NAMES[selectedPlan]||'Pro';
+      modal.classList.add('show');
+      setTimeout(()=>document.getElementById('email').focus(),50);
+    }
     function closeModal(){modal.classList.remove('show')}
     modal.addEventListener('click',e=>{if(e.target===modal)closeModal()});
     function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
@@ -314,7 +354,7 @@ LANDING_HTML = """<!doctype html>
       try{
         const res=await fetch('/create-checkout-session',{
           method:'POST',headers:{'Content-Type':'application/json'},
-          body:JSON.stringify({email})});
+          body:JSON.stringify({email,plan:selectedPlan})});
         const data=await res.json();
         if(data.url){window.location=data.url;return}
         toast(data.error||'No se pudo iniciar el pago. Intenta de nuevo.');

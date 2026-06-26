@@ -59,9 +59,15 @@ async def create_checkout_session(request: Request) -> JSONResponse:
         )
     body = await request.json()
     email = (body or {}).get("email", "")
+    plan = (body or {}).get("plan", "pro")
     workflow_id = (body or {}).get("workflow_id")
+    if not cfg.price_for_plan(plan):
+        return JSONResponse(
+            {"error": "Ese plan aún no está disponible. Prueba otro o escríbenos. ✅"},
+            status_code=503,
+        )
     try:
-        session = stripe_service.create_checkout_session(email, workflow_id)
+        session = stripe_service.create_checkout_session(email, plan, workflow_id)
         return JSONResponse({"url": session.url})
     except Exception as exc:  # noqa: BLE001
         return JSONResponse({"error": str(exc)}, status_code=400)
