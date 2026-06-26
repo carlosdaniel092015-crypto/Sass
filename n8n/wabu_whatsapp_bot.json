@@ -1,0 +1,62 @@
+{
+  "name": "Wabu — Bot de WhatsApp (YCloud)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "whatsapp-in",
+        "options": {}
+      },
+      "id": "b1a1f001-0001-4001-8001-000000000001",
+      "name": "Entrada WhatsApp (Webhook)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300],
+      "webhookId": "wabu-whatsapp-in"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extrae el número y el texto del payload reenviado por la app (YCloud).\nconst body = $input.first().json.body || $input.first().json;\nconst msg = body.whatsappInboundMessage || body.message || {};\nconst from = msg.from || body.from || '';\nconst text = (msg.text && msg.text.body) || msg.text || body.text || '';\n\n// Lógica simple de respuesta (personalízala o conéctala a un nodo de IA).\nlet reply;\nconst t = String(text).toLowerCase();\nif (t.includes('precio') || t.includes('plan')) {\n  reply = 'Nuestro plan Pro cuesta $29/mes e incluye bot ilimitado. ¿Te comparto el link de pago? 💳';\n} else if (t.includes('hola') || t.includes('buenas')) {\n  reply = '¡Hola! 👋 Soy tu asistente. ¿En qué puedo ayudarte hoy?';\n} else {\n  reply = 'Gracias por tu mensaje 🙌. Un agente te responderá en breve, o escribe \"precios\" para ver los planes.';\n}\n\nreturn [{ json: { from, text, reply } }];"
+      },
+      "id": "b1a1f001-0001-4001-8001-000000000002",
+      "name": "Procesar mensaje",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [520, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.ycloud.com/v2/whatsapp/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "X-API-Key", "value": "={{ $env.YCLOUD_API_KEY }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ from: $env.YCLOUD_FROM_NUMBER, to: $json.from, type: 'text', text: { body: $json.reply } }) }}",
+        "options": {}
+      },
+      "id": "b1a1f001-0001-4001-8001-000000000003",
+      "name": "Responder por YCloud",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [800, 300]
+    }
+  ],
+  "connections": {
+    "Entrada WhatsApp (Webhook)": {
+      "main": [[{ "node": "Procesar mensaje", "type": "main", "index": 0 }]]
+    },
+    "Procesar mensaje": {
+      "main": [[{ "node": "Responder por YCloud", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": { "executionOrder": "v1" },
+  "active": false,
+  "pinData": {},
+  "meta": { "templatecredsSetupCompleted": false }
+}
