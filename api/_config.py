@@ -58,5 +58,10 @@ SUPABASE_SERVICE_ROLE_KEY = _env("SUPABASE_SERVICE_ROLE_KEY")
 # App
 PUBLIC_BASE_URL = _env("PUBLIC_BASE_URL", "http://localhost:3000").rstrip("/")
 
-# Token para proteger el panel de administración (/panel) y sus endpoints.
+# Token para proteger los endpoints del panel (acceso por API / compatibilidad).
 ADMIN_TOKEN = _env("ADMIN_TOKEN")
+
+# Login de dueño (Fase 1, sin base de datos): credenciales + secreto de sesión.
+ADMIN_EMAIL = _env("ADMIN_EMAIL")
+ADMIN_PASSWORD = _env("ADMIN_PASSWORD")
+SESSION_SECRET = _env("SESSION_SECRET") or ADMIN_PASSWORD or ADMIN_TOKEN or "wabu-dev-secret"

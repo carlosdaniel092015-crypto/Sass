@@ -366,6 +366,60 @@ LANDING_HTML = """<!doctype html>
 </html>"""
 
 
+LOGIN_HTML = """<!doctype html>
+<html lang="es">
+<head>
+  <title>Entrar — Wabu</title>
+""" + _HEAD + """
+  <style>
+    .login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+    .login-card{background:var(--panel);border:1px solid var(--line);border-radius:20px;
+      padding:38px 34px;max-width:400px;width:100%}
+    .login-card .logo{justify-content:center;margin-bottom:8px;font-size:22px}
+    .login-card h1{font-size:22px;text-align:center;margin-bottom:6px}
+    .login-card p.s{color:var(--muted);text-align:center;font-size:14px;margin-bottom:24px}
+    .field{margin-bottom:14px}
+    .field label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
+    .field input{width:100%;padding:13px 14px;border-radius:10px;border:1px solid var(--line);
+      background:var(--bg);color:var(--txt);font-size:15px;font-family:inherit}
+    .field input:focus{outline:none;border-color:var(--brand)}
+  </style>
+</head>
+<body>
+  <div class="login-wrap">
+    <div class="login-card">
+      <div class="logo"><span class="dot">🤖</span> Wabu</div>
+      <h1>Entrar al panel</h1>
+      <p class="s">Accede para gestionar tus bots y conexiones de WhatsApp.</p>
+      <form id="loginForm">
+        <div class="field"><label>Email</label>
+          <input type="email" id="email" placeholder="tu@correo.com" required autocomplete="username"></div>
+        <div class="field"><label>Contraseña</label>
+          <input type="password" id="password" placeholder="••••••••" required autocomplete="current-password"></div>
+        <button class="btn btn-primary" style="width:100%" type="submit" id="loginBtn">Entrar</button>
+      </form>
+    </div>
+  </div>
+  <div class="toast" id="toast"></div>
+  <script>
+    function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),4500)}
+    document.getElementById('loginForm').addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const btn=document.getElementById('loginBtn'); btn.disabled=true; btn.textContent='Entrando…';
+      try{
+        const res=await fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({email:document.getElementById('email').value,password:document.getElementById('password').value})});
+        const data=await res.json();
+        if(res.ok){window.location='/panel';return}
+        toast(data.error||'No se pudo iniciar sesión');
+      }catch(e){toast('Error de conexión')}
+      btn.disabled=false; btn.textContent='Entrar';
+    });
+  </script>
+</body>
+</html>"""
+
+
 PANEL_HTML = """<!doctype html>
 <html lang="es">
 <head>
@@ -395,24 +449,14 @@ PANEL_HTML = """<!doctype html>
 <body>
   <nav><div class="container nav-in">
     <a class="logo" href="/"><span class="dot">🤖</span> Wabu</a>
-    <div class="nav-links"><a href="/">← Sitio</a></div>
+    <div class="nav-links"><a href="/">← Sitio</a><a href="#" onclick="logout();return false">Salir</a></div>
   </div></nav>
 
   <div class="panel">
     <h1>Panel de bots</h1>
     <p class="sub2">Crea y administra tus chatbots de WhatsApp en n8n.</p>
 
-    <!-- Login por token -->
-    <div class="box" id="loginBox">
-      <h2>🔐 Acceso</h2>
-      <div class="field">
-        <label>Token de administrador (variable ADMIN_TOKEN)</label>
-        <input type="password" id="token" placeholder="Pega tu ADMIN_TOKEN">
-      </div>
-      <button class="btn btn-primary" onclick="login()">Entrar</button>
-    </div>
-
-    <!-- App -->
+    <!-- App (visible solo con sesión válida) -->
     <div id="app" class="hidden">
 
       <div class="box">
@@ -459,12 +503,12 @@ PANEL_HTML = """<!doctype html>
   <div class="toast" id="toast"></div>
 
   <script>
-    let TOKEN = localStorage.getItem('wabu_token') || '';
     let META = null;            // config del Embedded Signup
     let sessionInfo = {};       // waba_id / phone_number_id que envía Meta
     const $ = id => document.getElementById(id);
     function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),4500)}
-    function headers(){return {'Content-Type':'application/json','X-Admin-Token':TOKEN}}
+    function headers(){return {'Content-Type':'application/json'}}  // la sesión va por cookie
+    async function logout(){ try{await fetch('/api/logout',{method:'POST'})}catch(e){} window.location='/login'; }
 
     // --- Embedded Signup de Meta (Facebook Login for Business) ---
     window.addEventListener('message', (event) => {
@@ -526,12 +570,15 @@ PANEL_HTML = """<!doctype html>
       }catch(e){}
     }
 
-    async function login(){
-      TOKEN = $('token').value.trim();
-      if(!TOKEN){toast('Escribe el token');return}
-      const ok = await loadBots(true);
-      if(ok){localStorage.setItem('wabu_token',TOKEN);$('loginBox').classList.add('hidden');$('app').classList.remove('hidden');loadMeta();}
-      else{toast('Token inválido o n8n no configurado');}
+    async function gate(){
+      // Verifica la sesión; si no hay, manda al login.
+      try{
+        const res = await fetch('/api/me');
+        if(!res.ok){window.location='/login';return}
+      }catch(e){window.location='/login';return}
+      $('app').classList.remove('hidden');
+      loadBots(true);
+      loadMeta();
     }
 
     async function loadBots(silent){
@@ -566,8 +613,8 @@ PANEL_HTML = """<!doctype html>
       btn.disabled=false; btn.textContent='Crear bot en n8n';
     }
 
-    // Auto-login si ya hay token guardado
-    if(TOKEN){loadBots(true).then(ok=>{if(ok){$('loginBox').classList.add('hidden');$('app').classList.remove('hidden');loadMeta();}})}
+    // Al cargar, verifica sesión y muestra el panel (o redirige al login)
+    gate();
   </script>
 </body>
 </html>"""

@@ -15,6 +15,7 @@ sys.path.insert(0, os.path.dirname(__file__))
 from fastapi import FastAPI, Request, Response  # noqa: E402
 from fastapi.responses import HTMLResponse, JSONResponse  # noqa: E402
 
+import _auth as auth  # noqa: E402
 import _config as cfg  # noqa: E402
 import _n8n_service as n8n  # noqa: E402
 import _pages as pages  # noqa: E402
@@ -43,7 +44,7 @@ async def health() -> dict:
         "n8n": bool(cfg.N8N_BASE_URL and cfg.N8N_API_KEY),
         "ycloud": bool(cfg.YCLOUD_API_KEY),
         "supabase": bool(cfg.SUPABASE_URL),
-        "panel": bool(cfg.ADMIN_TOKEN),
+        "login": auth.enabled(),
     }
 
 
@@ -51,10 +52,56 @@ async def health() -> dict:
 #  Panel de administración (crear/listar bots en n8n)
 # ----------------------------------------------------------------------
 def _is_admin(request: Request) -> bool:
+    # 1) Sesión de login (cookie firmada)
+    if auth.verify_session(request.cookies.get(auth.COOKIE_NAME, "")):
+        return True
+    # 2) Token de API (compatibilidad / uso programático)
     token = request.headers.get("x-admin-token") or request.headers.get(
         "authorization", ""
     ).removeprefix("Bearer ").strip()
     return bool(cfg.ADMIN_TOKEN) and token == cfg.ADMIN_TOKEN
+
+
+@app.get("/login", response_class=HTMLResponse)
+async def login_page() -> str:
+    return pages.LOGIN_HTML
+
+
+@app.post("/api/login")
+async def api_login(request: Request) -> JSONResponse:
+    if not auth.enabled():
+        return JSONResponse(
+            {"error": "El login no está configurado (define ADMIN_EMAIL y ADMIN_PASSWORD)."},
+            status_code=503,
+        )
+    body = await request.json() or {}
+    if not auth.check_credentials(body.get("email", ""), body.get("password", "")):
+        return JSONResponse({"error": "Credenciales incorrectas"}, status_code=401)
+    resp = JSONResponse({"ok": True})
+    resp.set_cookie(
+        auth.COOKIE_NAME,
+        auth.make_session(body.get("email", "")),
+        max_age=auth.DEFAULT_TTL,
+        httponly=True,
+        secure=True,
+        samesite="lax",
+        path="/",
+    )
+    return resp
+
+
+@app.post("/api/logout")
+async def api_logout() -> JSONResponse:
+    resp = JSONResponse({"ok": True})
+    resp.delete_cookie(auth.COOKIE_NAME, path="/")
+    return resp
+
+
+@app.get("/api/me")
+async def api_me(request: Request) -> JSONResponse:
+    if not _is_admin(request):
+        return JSONResponse({"error": "no autorizado"}, status_code=401)
+    return JSONResponse({"ok": True})
 
 
 @app.get("/panel", response_class=HTMLResponse)
