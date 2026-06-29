@@ -536,43 +536,162 @@ PANEL_HTML = """<!doctype html>
     .wa-card .body .btn{align-self:flex-start;margin-top:8px}
     @media(max-width:520px){.wa-card{flex-direction:column}.wa-card .pic{width:100%;height:120px}}
     .faq2{display:flex;flex-direction:column;gap:10px}
+    /* Trial badge */
+    .trial{margin:0 14px 6px;padding:9px 12px;border-radius:10px;background:rgba(234,179,8,.1);
+      border:1px solid rgba(234,179,8,.3);color:#fde68a;font-size:12.5px;font-weight:600;display:flex;align-items:center;gap:8px}
+    .op{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--muted);padding:10px 18px;border-top:1px solid var(--line)}
+    .op .dotg{width:8px;height:8px;border-radius:50%;background:var(--brand);box-shadow:0 0 8px var(--brand)}
+    /* Encabezado de sección */
+    .sec-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:22px;flex-wrap:wrap}
+    .sec-head h2{font-size:24px;margin:0 0 4px}
+    .sec-head p{color:var(--muted);font-size:14px}
+    .greet{font-size:26px;font-weight:800;margin-bottom:2px}
+    /* Stat cards */
+    .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-bottom:22px}
+    @media(max-width:1000px){.stats{grid-template-columns:repeat(2,1fr)}}
+    @media(max-width:560px){.stats{grid-template-columns:1fr}}
+    .stat{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:20px}
+    .stat .top{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:13px;margin-bottom:10px}
+    .stat .ic{width:34px;height:34px;border-radius:9px;background:rgba(34,197,94,.12);display:grid;place-items:center;font-size:16px}
+    .stat .big{font-size:34px;font-weight:800;line-height:1}
+    .stat .sub{font-size:12px;color:var(--muted);margin-top:8px}
+    .stat .sub b{color:#86efac;background:rgba(34,197,94,.12);padding:1px 7px;border-radius:6px;font-size:11px}
+    /* Two-column dashboard */
+    .dgrid{display:grid;grid-template-columns:2fr 1fr;gap:18px}
+    @media(max-width:900px){.dgrid{grid-template-columns:1fr}}
+    .pend{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 0;border-top:1px solid var(--line)}
+    .pend:first-of-type{border-top:0}
+    .pend .l{display:flex;gap:12px;align-items:center}
+    .pend .pic{width:36px;height:36px;border-radius:10px;background:var(--bg2);display:grid;place-items:center}
+    .pend .t{font-size:14px;font-weight:600}.pend .d{font-size:12px;color:var(--muted)}
+    .pend .num{font-size:20px;font-weight:800}
+    .chartph{height:240px;display:grid;place-items:center;color:var(--muted);font-size:13px;
+      background:linear-gradient(180deg,transparent,rgba(34,197,94,.04));border-radius:12px}
+    /* Pipeline tabs */
+    .tabs{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0}
+    .tabs .tab{padding:7px 14px;border:1px solid var(--line);border-radius:999px;font-size:13px;color:var(--muted);cursor:pointer}
+    .tabs .tab.active{background:rgba(34,197,94,.14);color:#86efac;border-color:rgba(34,197,94,.4)}
+    .tabs .tab b{margin-left:6px;opacity:.7}
+    /* Integraciones */
+    .ints{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:18px}
+    @media(max-width:800px){.ints{grid-template-columns:repeat(2,1fr)}}
+    .int{background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:16px;display:flex;gap:10px;align-items:center}
+    .int .ig{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;font-weight:800;font-size:13px}
+    .int .nm{font-size:14px;font-weight:600}.int .ds{font-size:12px;color:var(--muted)}
+    .cfgcards{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+    @media(max-width:760px){.cfgcards{grid-template-columns:1fr}}
   </style>
 </head>
 <body>
   <div id="app" class="hidden shell">
     <aside class="side" id="side">
       <div class="brand"><span class="dot">🤖</span> Wabu</div>
+      <div class="trial">⏳ Prueba: 3d 3h</div>
       <nav class="menu">
-        <div class="grp">WhatsApp Manager</div>
-        <a class="item active" data-sec="wa" onclick="showSection('wa')">💬 Cuentas</a>
-        <a class="item" data-sec="bots" onclick="showSection('bots')">🤖 Bots</a>
-        <a class="item" data-sec="templates" onclick="showSection('templates')">📄 Plantillas <span class="soon">pronto</span></a>
-        <a class="item" data-sec="flows" onclick="showSection('flows')">🔀 Flows <span class="soon">pronto</span></a>
-        <a class="item" data-sec="analytics" onclick="showSection('analytics')">📊 Analítica <span class="soon">pronto</span></a>
-        <div class="grp">Interacción</div>
-        <a class="item" data-sec="inbox" onclick="showSection('inbox')">📥 Bandeja <span class="soon">pronto</span></a>
-        <a class="item" data-sec="contacts" onclick="showSection('contacts')">👥 Contactos <span class="soon">pronto</span></a>
-        <a class="item" data-sec="campaigns" onclick="showSection('campaigns')">📣 Campañas <span class="soon">pronto</span></a>
-        <div class="grp">Cuenta</div>
-        <a class="item" data-sec="billing" onclick="showSection('billing')">💳 Facturación <span class="soon">pronto</span></a>
-        <a class="item" data-sec="settings" onclick="showSection('settings')">⚙️ Ajustes <span class="soon">pronto</span></a>
+        <div class="grp">Principal</div>
+        <a class="item active" data-sec="dashboard" onclick="showSection('dashboard')">📊 Dashboard</a>
+        <a class="item" data-sec="conversations" onclick="showSection('conversations')">💬 Conversaciones</a>
+        <a class="item" data-sec="clients" onclick="showSection('clients')">👥 Clientes</a>
+        <a class="item" data-sec="reports" onclick="showSection('reports')">📈 Reportes</a>
+        <a class="item" data-sec="agenda" onclick="showSection('agenda')">📅 Agenda</a>
+        <a class="item" data-sec="templates" onclick="showSection('templates')">📄 Plantillas</a>
+        <a class="item" data-sec="products" onclick="showSection('products')">📦 Productos</a>
+        <div class="grp">Configuración</div>
+        <a class="item" data-sec="wa" onclick="showSection('wa')">🟢 WhatsApp</a>
+        <a class="item" data-sec="agent" onclick="showSection('agent')">🤖 Agente IA</a>
+        <a class="item" data-sec="knowledge" onclick="showSection('knowledge')">📚 Conocimiento</a>
+        <a class="item" data-sec="funnel" onclick="showSection('funnel')">🔻 Funnel</a>
+        <a class="item" data-sec="webhooks" onclick="showSection('webhooks')">🔗 Webhooks</a>
       </nav>
       <div class="side-foot">
         <div class="user"><span class="ava" id="ava">W</span>
           <div><div class="un" id="userEmail">—</div><div class="ur">Dueño</div></div></div>
         <a href="#" onclick="logout();return false" class="logoutlink">Salir</a>
       </div>
+      <div class="op"><span class="dotg"></span> Operativo</div>
     </aside>
 
     <main class="main">
       <header class="topbar">
         <button class="burger" onclick="toggleSide()">☰</button>
-        <h1 id="secTitle">Cuentas de WhatsApp</h1>
+        <h1 id="secTitle">Dashboard</h1>
         <a href="/" class="btn btn-ghost" style="padding:9px 14px">← Sitio</a>
       </header>
       <div class="content">
 
-      <section class="sec" id="sec-wa">
+      <!-- DASHBOARD -->
+      <section class="sec" id="sec-dashboard">
+        <div class="greet" id="greet">Hola 👋</div>
+        <p style="color:var(--muted);margin-bottom:22px">Rendimiento de los últimos 7 días</p>
+        <div class="stats">
+          <div class="stat"><div class="top">Mensajes IA <span class="ic">💬</span></div><div class="big">0</div><div class="sub"><b>Estable</b> respondidos</div></div>
+          <div class="stat"><div class="top">Nuevos leads <span class="ic">🧲</span></div><div class="big">0</div><div class="sub"><b>Estable</b> 0 total</div></div>
+          <div class="stat"><div class="top">Citas agendadas <span class="ic">📅</span></div><div class="big">0</div><div class="sub"><b>Estable</b> 0 hoy</div></div>
+          <div class="stat"><div class="top">Tasa de respuesta <span class="ic">📈</span></div><div class="big">0%</div><div class="sub">0 mensajes recibidos</div></div>
+        </div>
+        <div class="dgrid">
+          <div class="box"><h2>Actividad de mensajes</h2>
+            <div class="chartph">Aún sin datos — aquí verás IA vs clientes por día</div></div>
+          <div class="box"><h2>Pendientes</h2>
+            <div class="pend"><div class="l"><span class="pic">🔔</span><div><div class="t">Intervenciones humanas</div><div class="d">Clientes esperando atención</div></div></div><div class="num">0</div></div>
+            <div class="pend"><div class="l"><span class="pic">📅</span><div><div class="t">Citas hoy</div><div class="d">Próximas 24h</div></div></div><div class="num">0</div></div>
+            <div class="pend"><div class="l"><span class="pic">📚</span><div><div class="t">Base de conocimiento</div><div class="d">Añade docs para mejorar al bot</div></div></div><div class="num">→</div></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- CONVERSACIONES -->
+      <section class="sec hidden" id="sec-conversations">
+        <div class="empty"><div class="ic">💬</div><h3>Sin conversaciones</h3>
+          <p>Aquí verás los chats de WhatsApp de tus clientes en tiempo real. Conecta tu número en WhatsApp para empezar.</p></div>
+      </section>
+
+      <!-- CLIENTES / CRM -->
+      <section class="sec hidden" id="sec-clients">
+        <div class="sec-head"><div><h2>CRM de clientes</h2><p>Gestiona tu pipeline de ventas y contactos</p></div>
+          <button class="btn btn-primary" onclick="soon()">+ Nuevo contacto</button></div>
+        <div class="tabs">
+          <span class="tab active">Todos <b>0</b></span><span class="tab">Nuevos <b>0</b></span>
+          <span class="tab">Contactados <b>0</b></span><span class="tab">Calificados <b>0</b></span>
+          <span class="tab">Interesados <b>0</b></span><span class="tab">Negociación <b>0</b></span>
+          <span class="tab">Cerrados <b>0</b></span><span class="tab">Perdidos <b>0</b></span>
+        </div>
+        <div class="box"><div class="empty"><div class="ic">👥</div><h3>No hay contactos aún</h3>
+          <p>Aparecerán solos cuando tus clientes te escriban por WhatsApp — o agrega uno tú.</p></div></div>
+      </section>
+
+      <!-- REPORTES -->
+      <section class="sec hidden" id="sec-reports">
+        <div class="sec-head"><div><h2>Reportes</h2><p>Análisis de rendimiento y conversión</p></div></div>
+        <div class="stats">
+          <div class="stat"><div class="top">Nuevos leads <span class="ic">🧲</span></div><div class="big">0</div><div class="sub">en este periodo</div></div>
+          <div class="stat"><div class="top">Leads calificados <span class="ic">✅</span></div><div class="big">0</div><div class="sub">0% de los nuevos</div></div>
+          <div class="stat"><div class="top">Cerrados (ganados) <span class="ic">📈</span></div><div class="big">0</div><div class="sub">0% de calificados</div></div>
+          <div class="stat"><div class="top">Citas agendadas <span class="ic">📅</span></div><div class="big">0</div><div class="sub">por IA</div></div>
+        </div>
+        <div class="box"><h2>Funnel de conversión</h2><div class="chartph">Sin datos todavía</div></div>
+      </section>
+
+      <!-- AGENDA -->
+      <section class="sec hidden" id="sec-agenda">
+        <div class="empty"><div class="ic">📅</div><h3>Sin citas</h3><p>Las citas que agende tu agente IA aparecerán aquí. También podrás crearlas a mano.</p></div>
+      </section>
+
+      <!-- PLANTILLAS -->
+      <section class="sec hidden" id="sec-templates">
+        <div class="sec-head"><div><h2>Plantillas de WhatsApp</h2><p>Plantillas aprobadas por Meta para reabrir conversaciones fuera de las 24h</p></div></div>
+        <div class="box"><div class="empty"><div class="ic">📄</div><h3>Sin plantillas</h3><p>Conecta WhatsApp y sincroniza con Meta, o crea una nueva plantilla.</p></div></div>
+      </section>
+
+      <!-- PRODUCTOS -->
+      <section class="sec hidden" id="sec-products">
+        <div class="sec-head"><div><h2>Catálogo de productos</h2><p>Gestiona los productos y servicios que tu agente IA puede recomendar</p></div>
+          <button class="btn btn-primary" onclick="soon()">+ Nuevo producto</button></div>
+        <div class="box"><div class="empty"><div class="ic">📦</div><h3>Sin productos</h3><p>Crea tu primer producto para que el agente IA pueda recomendarlos.</p></div></div>
+      </section>
+
+      <!-- WHATSAPP -->
+      <section class="sec hidden" id="sec-wa">
       <div class="box">
         <h2>📲 Cuentas de WhatsApp</h2>
         <p class="meta" style="color:var(--muted);margin-bottom:18px">
@@ -624,35 +743,64 @@ PANEL_HTML = """<!doctype html>
       </div>
       </section>
 
-      <section class="sec hidden" id="sec-bots">
-      <div class="box">
-        <h2>➕ Crear bot nuevo</h2>
-        <div class="field">
-          <label>Nombre del bot</label>
-          <input id="botName" placeholder="Bot de Ventas - Cliente X">
+      <!-- AGENTE IA -->
+      <section class="sec hidden" id="sec-agent">
+        <div class="sec-head"><div><h2>Agente IA</h2><p>Personaliza cómo tu agente conversa, captura datos y responde a tus clientes.</p></div></div>
+        <div class="box">
+          <h2>⚡ Configura tu agente</h2>
+          <p style="color:var(--muted);margin-bottom:18px">Responde unas preguntas sobre tu negocio y la IA configurará todo. (Próximamente el asistente; por ahora crea el bot abajo.)</p>
+          <div class="cfgcards">
+            <button class="btn btn-ghost" onclick="soon()">⚡ Configurar con asistente</button>
+            <button class="btn btn-ghost" onclick="soon()">📋 Plantilla por rubro</button>
+            <button class="btn btn-ghost" onclick="soon()">⚙️ Edición manual</button>
+          </div>
         </div>
-        <div class="field">
-          <label>Mensaje de bienvenida / por defecto</label>
-          <textarea id="botGreeting" placeholder="¡Hola! 👋 Soy el asistente de... ¿En qué te ayudo?"></textarea>
+        <div class="box">
+          <h2>➕ Crear bot en n8n</h2>
+          <p style="color:var(--muted);margin-bottom:16px">Genera un workflow de WhatsApp en tu n8n y actívalo automáticamente.</p>
+          <div class="field"><label>Nombre del bot</label>
+            <input id="botName" placeholder="Bot de Ventas - Cliente X"></div>
+          <div class="field"><label>Mensaje de bienvenida / por defecto</label>
+            <textarea id="botGreeting" placeholder="¡Hola! 👋 Soy el asistente de... ¿En qué te ayudo?"></textarea></div>
+          <button class="btn btn-primary" id="createBtn" onclick="createBot()">Crear bot en n8n</button>
+          <div id="createResult" style="margin-top:16px"></div>
         </div>
-        <button class="btn btn-primary" id="createBtn" onclick="createBot()">Crear bot en n8n</button>
-        <div id="createResult" style="margin-top:16px"></div>
-      </div>
-
-      <div class="box">
-        <h2>🤖 Tus bots</h2>
-        <div id="botList"><p class="meta" style="color:var(--muted)">Cargando…</p></div>
-      </div>
+        <div class="box">
+          <h2>🤖 Tus bots</h2>
+          <div id="botList"><p class="meta" style="color:var(--muted)">Cargando…</p></div>
+        </div>
       </section>
 
-      <section class="sec hidden" id="sec-templates"><div class="empty"><div class="ic">📄</div><h3>Plantillas</h3><p>Crea y gestiona plantillas de mensajes de WhatsApp. Próximamente.</p></div></section>
-      <section class="sec hidden" id="sec-flows"><div class="empty"><div class="ic">🔀</div><h3>WhatsApp Flows</h3><p>Formularios y flujos interactivos dentro del chat. Próximamente.</p></div></section>
-      <section class="sec hidden" id="sec-analytics"><div class="empty"><div class="ic">📊</div><h3>Analítica</h3><p>Métricas de conversaciones, entregas y conversión. Próximamente.</p></div></section>
-      <section class="sec hidden" id="sec-inbox"><div class="empty"><div class="ic">📥</div><h3>Bandeja</h3><p>Atiende las conversaciones de tus clientes en un solo lugar. Próximamente.</p></div></section>
-      <section class="sec hidden" id="sec-contacts"><div class="empty"><div class="ic">👥</div><h3>Contactos</h3><p>Tu base de contactos y segmentos. Próximamente.</p></div></section>
-      <section class="sec hidden" id="sec-campaigns"><div class="empty"><div class="ic">📣</div><h3>Campañas</h3><p>Envíos masivos y difusión segmentada. Próximamente.</p></div></section>
-      <section class="sec hidden" id="sec-billing"><div class="empty"><div class="ic">💳</div><h3>Facturación</h3><p>Tu suscripción y plan (Stripe). Próximamente.</p></div></section>
-      <section class="sec hidden" id="sec-settings"><div class="empty"><div class="ic">⚙️</div><h3>Ajustes</h3><p>Configuración de tu cuenta y conexiones. Próximamente.</p></div></section>
+      <!-- CONOCIMIENTO (RAG) -->
+      <section class="sec hidden" id="sec-knowledge">
+        <div class="sec-head"><div><h2>Base de conocimiento</h2><p>Documentos que tu agente consulta en cada conversación mediante búsqueda semántica (RAG).</p></div>
+          <button class="btn btn-primary" onclick="soon()">+ Nuevo</button></div>
+        <div class="box"><div class="empty"><div class="ic">📚</div><h3>Sin documentos</h3>
+          <p>Sube archivos o pega texto para entrenar a tu agente. Responderá con tus datos y citará las fuentes.</p></div></div>
+      </section>
+
+      <!-- FUNNEL -->
+      <section class="sec hidden" id="sec-funnel">
+        <div class="sec-head"><div><h2>Funnel de ventas</h2><p>Define los pasos por los que el agente lleva a cada cliente: objetivos y criterios de avance.</p></div>
+          <button class="btn btn-primary" onclick="soon()">+ Nuevo paso</button></div>
+        <div class="box"><div class="empty"><div class="ic">🔻</div><h3>Tu funnel está vacío</h3>
+          <p>Aplica una plantilla de tu industria o crea pasos manualmente. Cada paso guía al agente con un prompt.</p></div></div>
+      </section>
+
+      <!-- WEBHOOKS -->
+      <section class="sec hidden" id="sec-webhooks">
+        <div class="sec-head"><div><h2>Webhooks & Integraciones</h2><p>Conecta tu CRM con Zapier, Make, n8n o cualquier sistema recibiendo eventos en tiempo real.</p></div>
+          <button class="btn btn-primary" onclick="soon()">+ Nuevo webhook</button></div>
+        <div class="box"><div class="empty"><div class="ic">🔗</div><h3>No hay webhooks configurados</h3>
+          <p>Crea tu primer webhook para empezar a recibir eventos (mensaje, cita, cambio de lead) en tu sistema.</p></div>
+          <div class="ints">
+            <div class="int"><span class="ig" style="background:#ff4f00;color:#fff">Z</span><div><div class="nm">Zapier</div><div class="ds">5000+ apps</div></div></div>
+            <div class="int"><span class="ig" style="background:#6d28d9;color:#fff">M</span><div><div class="nm">Make</div><div class="ds">Escenarios visuales</div></div></div>
+            <div class="int"><span class="ig" style="background:#ea4b71;color:#fff">n8</span><div><div class="nm">n8n</div><div class="ds">Open source</div></div></div>
+            <div class="int"><span class="ig" style="background:var(--bg);color:#86efac">&lt;/&gt;</span><div><div class="nm">API propia</div><div class="ds">Documentación</div></div></div>
+          </div>
+        </div>
+      </section>
 
       </div>
     </main>
@@ -668,8 +816,10 @@ PANEL_HTML = """<!doctype html>
     function headers(){return {'Content-Type':'application/json'}}  // la sesión va por cookie
     async function logout(){ try{await fetch('/api/logout',{method:'POST'})}catch(e){} window.location='/login'; }
 
-    const TITLES={wa:'Cuentas de WhatsApp',bots:'Bots',templates:'Plantillas',flows:'WhatsApp Flows',
-      analytics:'Analítica',inbox:'Bandeja',contacts:'Contactos',campaigns:'Campañas',billing:'Facturación',settings:'Ajustes'};
+    const TITLES={dashboard:'Dashboard',conversations:'Conversaciones',clients:'Clientes',reports:'Reportes',
+      agenda:'Agenda',templates:'Plantillas',products:'Productos',wa:'WhatsApp',agent:'Agente IA',
+      knowledge:'Conocimiento',funnel:'Funnel',webhooks:'Webhooks'};
+    function soon(){ toast('🔒 Próximamente — esta sección se activa con la base de datos.'); }
     function showSection(sec){
       document.querySelectorAll('.sec').forEach(s=>s.classList.add('hidden'));
       const el=$('sec-'+sec); if(el)el.classList.remove('hidden');
@@ -745,7 +895,8 @@ PANEL_HTML = """<!doctype html>
         const res = await fetch('/api/me');
         if(!res.ok){window.location='/login';return}
         const me = await res.json();
-        if(me.email){ $('userEmail').textContent=me.email; $('ava').textContent=(me.email[0]||'W').toUpperCase(); }
+        if(me.email){ $('userEmail').textContent=me.email; $('ava').textContent=(me.email[0]||'W').toUpperCase();
+          const nm=me.email.split('@')[0]; const g=$('greet'); if(g)g.textContent='Hola, '+nm+' 👋'; }
       }catch(e){window.location='/login';return}
       $('app').classList.remove('hidden');
       loadBots(true);
