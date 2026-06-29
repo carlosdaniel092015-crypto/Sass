@@ -46,3 +46,6 @@ SUPABASE_SERVICE_ROLE_KEY = _env("SUPABASE_SERVICE_ROLE_KEY")
 
 # App
 PUBLIC_BASE_URL = _env("PUBLIC_BASE_URL", "http://localhost:3000").rstrip("/")
+
+# Token para proteger el panel de administración (/panel) y sus endpoints.
+ADMIN_TOKEN = _env("ADMIN_TOKEN")

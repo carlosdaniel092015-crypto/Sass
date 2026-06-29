@@ -43,7 +43,48 @@ async def health() -> dict:
         "n8n": bool(cfg.N8N_BASE_URL and cfg.N8N_API_KEY),
         "ycloud": bool(cfg.YCLOUD_API_KEY),
         "supabase": bool(cfg.SUPABASE_URL),
+        "panel": bool(cfg.ADMIN_TOKEN),
     }
+
+
+# ----------------------------------------------------------------------
+#  Panel de administración (crear/listar bots en n8n)
+# ----------------------------------------------------------------------
+def _is_admin(request: Request) -> bool:
+    token = request.headers.get("x-admin-token") or request.headers.get(
+        "authorization", ""
+    ).removeprefix("Bearer ").strip()
+    return bool(cfg.ADMIN_TOKEN) and token == cfg.ADMIN_TOKEN
+
+
+@app.get("/panel", response_class=HTMLResponse)
+async def panel() -> str:
+    return pages.PANEL_HTML
+
+
+@app.get("/api/bots")
+async def api_list_bots(request: Request) -> JSONResponse:
+    if not _is_admin(request):
+        return JSONResponse({"error": "no autorizado"}, status_code=401)
+    try:
+        return JSONResponse({"bots": await n8n.list_bots()})
+    except Exception as exc:  # noqa: BLE001
+        return JSONResponse({"error": str(exc)}, status_code=502)
+
+
+@app.post("/api/bots/create")
+async def api_create_bot(request: Request) -> JSONResponse:
+    if not _is_admin(request):
+        return JSONResponse({"error": "no autorizado"}, status_code=401)
+    body = await request.json()
+    name = (body or {}).get("name", "").strip()
+    greeting = (body or {}).get("greeting", "").strip()
+    if not name:
+        return JSONResponse({"error": "Falta el nombre del bot"}, status_code=400)
+    try:
+        return JSONResponse(await n8n.create_bot(name, greeting))
+    except Exception as exc:  # noqa: BLE001
+        return JSONResponse({"error": str(exc)}, status_code=502)
 
 
 # ----------------------------------------------------------------------

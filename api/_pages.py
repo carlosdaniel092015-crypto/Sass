@@ -366,6 +366,130 @@ LANDING_HTML = """<!doctype html>
 </html>"""
 
 
+PANEL_HTML = """<!doctype html>
+<html lang="es">
+<head>
+  <title>Panel — Wabu</title>
+""" + _HEAD + """
+  <style>
+    .panel{max-width:880px;margin:0 auto;padding:40px 24px}
+    .panel h1{font-size:30px;margin-bottom:6px}
+    .panel .sub2{color:var(--muted);margin-bottom:28px}
+    .box{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:26px;margin-bottom:22px}
+    .box h2{font-size:18px;margin-bottom:16px}
+    .field{margin-bottom:14px}
+    .field label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
+    .field input,.field textarea{width:100%;padding:12px 14px;border-radius:10px;border:1px solid var(--line);
+      background:var(--bg);color:var(--txt);font-size:15px;font-family:inherit}
+    .field textarea{min-height:80px;resize:vertical}
+    .bot{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px;border:1px solid var(--line);
+      border-radius:12px;margin-bottom:10px;background:var(--bg2)}
+    .bot .meta{font-size:13px;color:var(--muted)}
+    .tag{font-size:12px;font-weight:700;padding:4px 10px;border-radius:999px}
+    .tag.on{background:rgba(34,197,94,.15);color:#86efac}
+    .tag.off{background:rgba(148,163,184,.15);color:var(--muted)}
+    .hidden{display:none}
+    code{background:var(--bg);padding:2px 7px;border-radius:6px;font-size:13px;color:#86efac;word-break:break-all}
+  </style>
+</head>
+<body>
+  <nav><div class="container nav-in">
+    <a class="logo" href="/"><span class="dot">🤖</span> Wabu</a>
+    <div class="nav-links"><a href="/">← Sitio</a></div>
+  </div></nav>
+
+  <div class="panel">
+    <h1>Panel de bots</h1>
+    <p class="sub2">Crea y administra tus chatbots de WhatsApp en n8n.</p>
+
+    <!-- Login por token -->
+    <div class="box" id="loginBox">
+      <h2>🔐 Acceso</h2>
+      <div class="field">
+        <label>Token de administrador (variable ADMIN_TOKEN)</label>
+        <input type="password" id="token" placeholder="Pega tu ADMIN_TOKEN">
+      </div>
+      <button class="btn btn-primary" onclick="login()">Entrar</button>
+    </div>
+
+    <!-- App -->
+    <div id="app" class="hidden">
+      <div class="box">
+        <h2>➕ Crear bot nuevo</h2>
+        <div class="field">
+          <label>Nombre del bot</label>
+          <input id="botName" placeholder="Bot de Ventas - Cliente X">
+        </div>
+        <div class="field">
+          <label>Mensaje de bienvenida / por defecto</label>
+          <textarea id="botGreeting" placeholder="¡Hola! 👋 Soy el asistente de... ¿En qué te ayudo?"></textarea>
+        </div>
+        <button class="btn btn-primary" id="createBtn" onclick="createBot()">Crear bot en n8n</button>
+        <div id="createResult" style="margin-top:16px"></div>
+      </div>
+
+      <div class="box">
+        <h2>🤖 Tus bots</h2>
+        <div id="botList"><p class="meta" style="color:var(--muted)">Cargando…</p></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    let TOKEN = localStorage.getItem('wabu_token') || '';
+    const $ = id => document.getElementById(id);
+    function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),4500)}
+    function headers(){return {'Content-Type':'application/json','X-Admin-Token':TOKEN}}
+
+    async function login(){
+      TOKEN = $('token').value.trim();
+      if(!TOKEN){toast('Escribe el token');return}
+      const ok = await loadBots(true);
+      if(ok){localStorage.setItem('wabu_token',TOKEN);$('loginBox').classList.add('hidden');$('app').classList.remove('hidden');}
+      else{toast('Token inválido o n8n no configurado');}
+    }
+
+    async function loadBots(silent){
+      try{
+        const res = await fetch('/api/bots',{headers:headers()});
+        if(res.status===401){return false}
+        const data = await res.json();
+        const list = $('botList');
+        if(!data.bots || !data.bots.length){list.innerHTML='<p class="meta">Aún no hay bots. Crea el primero arriba 👆</p>';return true}
+        list.innerHTML = data.bots.map(b=>`<div class="bot">
+          <div><b>${b.name||'(sin nombre)'}</b><div class="meta">ID: ${b.id}</div></div>
+          <span class="tag ${b.active?'on':'off'}">${b.active?'Activo':'Inactivo'}</span>
+        </div>`).join('');
+        return true;
+      }catch(e){if(!silent)toast('Error de conexión');return false}
+    }
+
+    async function createBot(){
+      const name = $('botName').value.trim();
+      const greeting = $('botGreeting').value.trim();
+      if(!name){toast('Ponle un nombre al bot');return}
+      const btn = $('createBtn'); btn.disabled=true; btn.textContent='Creando…';
+      try{
+        const res = await fetch('/api/bots/create',{method:'POST',headers:headers(),body:JSON.stringify({name,greeting})});
+        const data = await res.json();
+        if(res.ok){
+          $('createResult').innerHTML = `✅ Bot creado. Configura este webhook en YCloud:<br><code>${data.webhook_url}</code>`;
+          $('botName').value=''; $('botGreeting').value='';
+          loadBots(true);
+        }else{toast(data.error||'No se pudo crear el bot')}
+      }catch(e){toast('Error de conexión')}
+      btn.disabled=false; btn.textContent='Crear bot en n8n';
+    }
+
+    // Auto-login si ya hay token guardado
+    if(TOKEN){loadBots(true).then(ok=>{if(ok){$('loginBox').classList.add('hidden');$('app').classList.remove('hidden')}})}
+  </script>
+</body>
+</html>"""
+
+
 def status_page(emoji: str, title: str, text: str, accent: str = "#22c55e") -> str:
     return """<!doctype html><html lang="es"><head>
   <title>""" + title + """ — Wabu</title>""" + _HEAD + """</head>
