@@ -131,6 +131,20 @@ _HEAD = """
     details[open] summary::after{content:"–"}
     details p{color:var(--muted);margin-top:12px;font-size:15px}
 
+    /* Tabla comparativa */
+    .cmp{max-width:820px;margin:40px auto 0;border:1px solid var(--line);border-radius:16px;overflow:hidden}
+    .cmp-row{display:grid;grid-template-columns:1.4fr 1fr 1fr;align-items:center;
+      padding:14px 18px;border-top:1px solid var(--line);font-size:14.5px}
+    .cmp-row:first-child{border-top:0}
+    .cmp-head{background:var(--panel);font-weight:700;color:var(--muted)}
+    .cmp-head .hi{color:#86efac}
+    .cmp-row > div:first-child{color:var(--txt)}
+    .cmp-row > div{color:var(--muted)}
+    .cmp-row .hi{color:var(--txt);font-weight:600;background:rgba(34,197,94,.06)}
+    .cmp-row > div:nth-child(3){padding-left:12px;border-left:1px solid rgba(34,197,94,.25)}
+    @media(max-width:600px){.cmp-row{grid-template-columns:1fr;gap:4px;text-align:left}
+      .cmp-row > div:nth-child(3){border-left:0;padding-left:0}}
+
     /* CTA band */
     .band{background:linear-gradient(120deg,rgba(34,197,94,.14),rgba(99,102,241,.14));
       border:1px solid var(--line);border-radius:24px;padding:54px 30px;text-align:center}
@@ -167,29 +181,30 @@ LANDING_HTML = """<!doctype html>
     <a class="logo"><span class="dot">🤖</span> Wabu</a>
     <div class="nav-links">
       <a href="#features">Características</a>
-      <a href="#how">Cómo funciona</a>
+      <a href="#compare">Comparación</a>
+      <a href="#industrias">Industrias</a>
       <a href="#pricing">Precios</a>
       <a href="#faq">FAQ</a>
     </div>
-    <button class="btn btn-primary" onclick="openModal()">Empezar ahora</button>
+    <button class="btn btn-primary" onclick="openModal()">Probar gratis</button>
   </div></nav>
 
   <header class="hero"><div class="container">
     <span class="glow a"></span><span class="glow b"></span>
     <div class="hero-grid">
       <div>
-        <span class="badge">● En vivo 24/7 en WhatsApp</span>
-        <h1>Vende y atiende por <span class="grad-text">WhatsApp</span> con un bot que nunca duerme</h1>
-        <p class="lead">Activa un chatbot con IA conectado a tu WhatsApp en minutos.
-           Cobro mensual automático. Si dejas de pagar, se desactiva solo — sin contratos ni sorpresas.</p>
+        <span class="badge">● Agente de ventas con IA en WhatsApp</span>
+        <h1>Meta te presta la conversación. <span class="grad-text">Wabu</span> te hace dueño del cliente.</h1>
+        <p class="lead">Un agente de IA que <b>califica, agenda y cierra ventas 24/7</b> en tu WhatsApp —
+           con CRM, embudos sin código y tus datos siempre exportables. No solo respuestas: control total.</p>
         <div class="cta-row">
-          <button class="btn btn-primary" onclick="openModal()">Activar mi bot — $29/mes</button>
-          <a href="#how" class="btn btn-ghost">Ver cómo funciona</a>
+          <button class="btn btn-primary" onclick="openModal()">Probar gratis 3 días</button>
+          <a href="#compare" class="btn btn-ghost">Wabu vs IA de Meta</a>
         </div>
         <div class="trust">
-          <span>⚡ <b>Listo en minutos</b></span>
-          <span>🔒 <b>Pago seguro con Stripe</b></span>
-          <span>🚫 <b>Cancela cuando quieras</b></span>
+          <span>⚡ <b>Listo en 10 minutos</b></span>
+          <span>🎁 <b>Prueba gratis</b></span>
+          <span>💳 <b>Sin tarjeta</b></span>
         </div>
       </div>
       <div class="phone">
@@ -208,22 +223,51 @@ LANDING_HTML = """<!doctype html>
   </div></header>
 
   <section id="features"><div class="container">
-    <p class="eyebrow">Todo incluido</p>
-    <h2 class="h2">Una plataforma, todo el flujo</h2>
-    <p class="sub">Desde la página de venta hasta el cobro y la activación del bot. Sin pegar diez herramientas a mano.</p>
+    <p class="eyebrow">Todo en un lugar</p>
+    <h2 class="h2">Mucho más que respuestas automáticas</h2>
+    <p class="sub">Un CRM de WhatsApp con IA para captar, calificar y cerrar — sin pegar diez herramientas a mano.</p>
     <div class="grid3">
-      <div class="feature"><div class="ic">💬</div><h3>WhatsApp con YCloud</h3>
-        <p>Mensajería oficial de WhatsApp Business. Recibe y responde a tus clientes en tiempo real.</p></div>
-      <div class="feature"><div class="ic">🧠</div><h3>Cerebro en n8n</h3>
-        <p>El bot corre sobre un workflow de n8n: lógica, IA e integraciones sin límites.</p></div>
-      <div class="feature"><div class="ic">💳</div><h3>Cobro mensual con Stripe</h3>
-        <p>Suscripción recurrente con tarjeta. Facturación automática cada mes, sin perseguir pagos.</p></div>
-      <div class="feature"><div class="ic">🔌</div><h3>Apagado automático</h3>
-        <p>Si un pago falla o el cliente cancela, el bot se desactiva solo. Al regularizar, vuelve a la vida.</p></div>
-      <div class="feature"><div class="ic">📊</div><h3>Estado en Supabase</h3>
-        <p>Cada cliente, suscripción y bot queda registrado y sincronizado en tu base de datos.</p></div>
-      <div class="feature"><div class="ic">⚡</div><h3>Deploy en Vercel</h3>
-        <p>Infraestructura serverless en Python. Escala sola y se despliega con un push.</p></div>
+      <div class="feature"><div class="ic">🤖</div><h3>Agente IA 24/7</h3>
+        <p>Califica leads, responde dudas, agenda citas y cierra ventas a cualquier hora, en tu tono de marca.</p></div>
+      <div class="feature"><div class="ic">📥</div><h3>Bandeja en tiempo real</h3>
+        <p>Todas tus conversaciones en un solo lugar. El humano toma el control cuando hace falta.</p></div>
+      <div class="feature"><div class="ic">🔀</div><h3>Embudos sin código</h3>
+        <p>Diseña tu proceso de ventas con etapas y reglas, sin programar. La IA mueve cada lead solo.</p></div>
+      <div class="feature"><div class="ic">📚</div><h3>Base de conocimiento (RAG)</h3>
+        <p>Entrena al bot con tu info real. Responde con tus datos y evita inventar (sin alucinaciones).</p></div>
+      <div class="feature"><div class="ic">🎯</div><h3>Lead scoring</h3>
+        <p>Puntúa automáticamente a cada contacto por interés y prioriza a quien está listo para comprar.</p></div>
+      <div class="feature"><div class="ic">📤</div><h3>Tus datos son tuyos</h3>
+        <p>Exporta contactos e historial cuando quieras. Sin candados: el cliente es tuyo, no de Meta.</p></div>
+    </div>
+  </div></section>
+
+  <section id="compare" style="background:var(--bg2)"><div class="container">
+    <p class="eyebrow">La diferencia</p>
+    <h2 class="h2">Wabu vs la IA nativa de WhatsApp</h2>
+    <p class="sub">Meta responde mensajes. Wabu te da el cliente, el CRM y el control de tu venta.</p>
+    <div class="cmp">
+      <div class="cmp-row cmp-head"><div>Característica</div><div>IA nativa de Meta</div><div class="hi">Wabu</div></div>
+      <div class="cmp-row"><div>Dueño de los datos del cliente</div><div>❌ De Meta</div><div class="hi">✅ Tuyos, exportables</div></div>
+      <div class="cmp-row"><div>CRM y embudo de ventas</div><div>❌ No</div><div class="hi">✅ Incluido</div></div>
+      <div class="cmp-row"><div>Lead scoring y seguimiento</div><div>❌ No</div><div class="hi">✅ Automático</div></div>
+      <div class="cmp-row"><div>Base de conocimiento propia (RAG)</div><div>⚠️ Limitada</div><div class="hi">✅ Con tus datos</div></div>
+      <div class="cmp-row"><div>Multi-cuenta / agencia</div><div>❌ No</div><div class="hi">✅ Sí</div></div>
+      <div class="cmp-row"><div>Exportar y migrar sin candados</div><div>❌ No</div><div class="hi">✅ Cuando quieras</div></div>
+    </div>
+  </div></section>
+
+  <section id="industrias"><div class="container">
+    <p class="eyebrow">Plantillas por industria</p>
+    <h2 class="h2">Empieza con un agente ya entrenado</h2>
+    <p class="sub">Elige tu sector y ajusta. Conversaciones de ejemplo listas para vender desde el día uno.</p>
+    <div class="grid3">
+      <div class="feature"><div class="ic">🏥</div><h3>Clínicas y salud</h3><p>Agenda citas, recuerda turnos y responde dudas de pacientes.</p></div>
+      <div class="feature"><div class="ic">🏠</div><h3>Inmobiliarias</h3><p>Califica compradores, agenda visitas y envía fichas de propiedades.</p></div>
+      <div class="feature"><div class="ic">🛒</div><h3>E-commerce</h3><p>Recomienda productos, recupera carritos y cierra pedidos por WhatsApp.</p></div>
+      <div class="feature"><div class="ic">🍔</div><h3>Restaurantes</h3><p>Toma pedidos, reservas y responde el menú al instante.</p></div>
+      <div class="feature"><div class="ic">🎓</div><h3>Educación</h3><p>Informa cursos, inscribe alumnos y resuelve preguntas frecuentes.</p></div>
+      <div class="feature"><div class="ic">💼</div><h3>Servicios y agencias</h3><p>Capta prospectos, cotiza y agenda llamadas automáticamente.</p></div>
     </div>
   </div></section>
 
@@ -307,9 +351,9 @@ LANDING_HTML = """<!doctype html>
   </div></section>
 
   <section><div class="container"><div class="band">
-    <h2 class="h2" style="margin-top:0">¿List@ para automatizar tu WhatsApp?</h2>
-    <p class="sub">Activa tu bot hoy y deja que venda por ti 24/7.</p>
-    <button class="btn btn-primary" onclick="openModal()">Empezar ahora — $29/mes</button>
+    <h2 class="h2" style="margin-top:0">Tu próximo cliente está escribiéndote ahora</h2>
+    <p class="sub">Activa tu agente de IA hoy y deja que califique y venda por ti 24/7.</p>
+    <button class="btn btn-primary" onclick="openModal()">Probar gratis 3 días</button>
   </div></div></section>
 
   <footer><div class="container foot-in">
