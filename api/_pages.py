@@ -426,9 +426,44 @@ PANEL_HTML = """<!doctype html>
   <title>Panel — Wabu</title>
 """ + _HEAD + """
   <style>
-    .panel{max-width:880px;margin:0 auto;padding:40px 24px}
-    .panel h1{font-size:30px;margin-bottom:6px}
-    .panel .sub2{color:var(--muted);margin-bottom:28px}
+    .hidden{display:none!important}
+    /* Layout dashboard */
+    .shell{display:flex;min-height:100vh}
+    .side{width:250px;flex:none;background:var(--bg2);border-right:1px solid var(--line);
+      display:flex;flex-direction:column;position:sticky;top:0;height:100vh}
+    .side .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:19px;padding:20px}
+    .side .brand .dot{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;
+      background:linear-gradient(120deg,var(--brand),var(--brand2));font-size:18px}
+    .menu{flex:1;overflow:auto;padding:6px 12px 12px}
+    .menu .grp{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:16px 10px 6px}
+    .menu .item{display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:10px;color:var(--muted);
+      font-size:14.5px;font-weight:500;cursor:pointer;margin-bottom:2px}
+    .menu .item:hover{background:rgba(255,255,255,.05);color:var(--txt)}
+    .menu .item.active{background:rgba(34,197,94,.14);color:#86efac}
+    .menu .item .soon{margin-left:auto;font-size:10px;color:var(--muted);border:1px solid var(--line);
+      padding:1px 6px;border-radius:6px}
+    .side-foot{border-top:1px solid var(--line);padding:14px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+    .user{display:flex;align-items:center;gap:10px;min-width:0}
+    .user .ava{width:34px;height:34px;flex:none;border-radius:50%;background:linear-gradient(120deg,var(--brand),var(--brand2));
+      color:#03130b;display:grid;place-items:center;font-weight:800}
+    .user .un{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:120px}
+    .user .ur{font-size:11px;color:var(--muted)}
+    .logoutlink{font-size:13px;color:var(--muted)}.logoutlink:hover{color:#fca5a5}
+    .main{flex:1;min-width:0;display:flex;flex-direction:column}
+    .topbar{display:flex;align-items:center;gap:14px;padding:16px 26px;border-bottom:1px solid var(--line);
+      position:sticky;top:0;background:rgba(7,11,22,.82);backdrop-filter:blur(12px);z-index:20}
+    .topbar h1{font-size:20px;flex:1}
+    .burger{display:none;background:none;border:0;color:var(--txt);font-size:22px;cursor:pointer}
+    .content{padding:26px;max-width:1040px;width:100%}
+    .empty{text-align:center;color:var(--muted);padding:60px 20px;border:1px dashed var(--line);border-radius:16px}
+    .empty .ic{font-size:46px;margin-bottom:12px}
+    .empty h3{color:var(--txt);font-size:18px;margin-bottom:6px}
+    @media(max-width:820px){
+      .side{position:fixed;left:0;top:0;z-index:60;transform:translateX(-100%);transition:.25s;box-shadow:0 0 40px rgba(0,0,0,.5)}
+      .side.open{transform:none}
+      .burger{display:block}
+    }
+    /* Componentes */
     .box{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:26px;margin-bottom:22px}
     .box h2{font-size:18px;margin-bottom:16px}
     .field{margin-bottom:14px}
@@ -442,11 +477,9 @@ PANEL_HTML = """<!doctype html>
     .tag{font-size:12px;font-weight:700;padding:4px 10px;border-radius:999px}
     .tag.on{background:rgba(34,197,94,.15);color:#86efac}
     .tag.off{background:rgba(148,163,184,.15);color:var(--muted)}
-    .hidden{display:none}
     code{background:var(--bg);padding:2px 7px;border-radius:6px;font-size:13px;color:#86efac;word-break:break-all}
-    /* Tarjetas de conexión estilo YCloud */
     .wa-cards{display:grid;grid-template-columns:1fr 1fr;gap:20px}
-    @media(max-width:820px){.wa-cards{grid-template-columns:1fr}}
+    @media(max-width:980px){.wa-cards{grid-template-columns:1fr}}
     .wa-card{display:flex;border:1px solid var(--line);border-radius:16px;overflow:hidden;
       background:var(--bg2);transition:.2s}
     .wa-card:hover{border-color:rgba(34,197,94,.45);transform:translateY(-3px)}
@@ -462,18 +495,40 @@ PANEL_HTML = """<!doctype html>
   </style>
 </head>
 <body>
-  <nav><div class="container nav-in">
-    <a class="logo" href="/"><span class="dot">🤖</span> Wabu</a>
-    <div class="nav-links"><a href="/">← Sitio</a><a href="#" onclick="logout();return false">Salir</a></div>
-  </div></nav>
+  <div id="app" class="hidden shell">
+    <aside class="side" id="side">
+      <div class="brand"><span class="dot">🤖</span> Wabu</div>
+      <nav class="menu">
+        <div class="grp">WhatsApp Manager</div>
+        <a class="item active" data-sec="wa" onclick="showSection('wa')">💬 Cuentas</a>
+        <a class="item" data-sec="bots" onclick="showSection('bots')">🤖 Bots</a>
+        <a class="item" data-sec="templates" onclick="showSection('templates')">📄 Plantillas <span class="soon">pronto</span></a>
+        <a class="item" data-sec="flows" onclick="showSection('flows')">🔀 Flows <span class="soon">pronto</span></a>
+        <a class="item" data-sec="analytics" onclick="showSection('analytics')">📊 Analítica <span class="soon">pronto</span></a>
+        <div class="grp">Interacción</div>
+        <a class="item" data-sec="inbox" onclick="showSection('inbox')">📥 Bandeja <span class="soon">pronto</span></a>
+        <a class="item" data-sec="contacts" onclick="showSection('contacts')">👥 Contactos <span class="soon">pronto</span></a>
+        <a class="item" data-sec="campaigns" onclick="showSection('campaigns')">📣 Campañas <span class="soon">pronto</span></a>
+        <div class="grp">Cuenta</div>
+        <a class="item" data-sec="billing" onclick="showSection('billing')">💳 Facturación <span class="soon">pronto</span></a>
+        <a class="item" data-sec="settings" onclick="showSection('settings')">⚙️ Ajustes <span class="soon">pronto</span></a>
+      </nav>
+      <div class="side-foot">
+        <div class="user"><span class="ava" id="ava">W</span>
+          <div><div class="un" id="userEmail">—</div><div class="ur">Dueño</div></div></div>
+        <a href="#" onclick="logout();return false" class="logoutlink">Salir</a>
+      </div>
+    </aside>
 
-  <div class="panel">
-    <h1>Panel de bots</h1>
-    <p class="sub2">Crea y administra tus chatbots de WhatsApp en n8n.</p>
+    <main class="main">
+      <header class="topbar">
+        <button class="burger" onclick="toggleSide()">☰</button>
+        <h1 id="secTitle">Cuentas de WhatsApp</h1>
+        <a href="/" class="btn btn-ghost" style="padding:9px 14px">← Sitio</a>
+      </header>
+      <div class="content">
 
-    <!-- App (visible solo con sesión válida) -->
-    <div id="app" class="hidden">
-
+      <section class="sec" id="sec-wa">
       <div class="box">
         <h2>📲 Cuentas de WhatsApp</h2>
         <p class="meta" style="color:var(--muted);margin-bottom:18px">
@@ -523,7 +578,9 @@ PANEL_HTML = """<!doctype html>
                Los mensajes enviados desde la app son gratis; los de la API siguen el precio estándar.</p></details>
         </div>
       </div>
+      </section>
 
+      <section class="sec hidden" id="sec-bots">
       <div class="box">
         <h2>➕ Crear bot nuevo</h2>
         <div class="field">
@@ -542,7 +599,19 @@ PANEL_HTML = """<!doctype html>
         <h2>🤖 Tus bots</h2>
         <div id="botList"><p class="meta" style="color:var(--muted)">Cargando…</p></div>
       </div>
-    </div>
+      </section>
+
+      <section class="sec hidden" id="sec-templates"><div class="empty"><div class="ic">📄</div><h3>Plantillas</h3><p>Crea y gestiona plantillas de mensajes de WhatsApp. Próximamente.</p></div></section>
+      <section class="sec hidden" id="sec-flows"><div class="empty"><div class="ic">🔀</div><h3>WhatsApp Flows</h3><p>Formularios y flujos interactivos dentro del chat. Próximamente.</p></div></section>
+      <section class="sec hidden" id="sec-analytics"><div class="empty"><div class="ic">📊</div><h3>Analítica</h3><p>Métricas de conversaciones, entregas y conversión. Próximamente.</p></div></section>
+      <section class="sec hidden" id="sec-inbox"><div class="empty"><div class="ic">📥</div><h3>Bandeja</h3><p>Atiende las conversaciones de tus clientes en un solo lugar. Próximamente.</p></div></section>
+      <section class="sec hidden" id="sec-contacts"><div class="empty"><div class="ic">👥</div><h3>Contactos</h3><p>Tu base de contactos y segmentos. Próximamente.</p></div></section>
+      <section class="sec hidden" id="sec-campaigns"><div class="empty"><div class="ic">📣</div><h3>Campañas</h3><p>Envíos masivos y difusión segmentada. Próximamente.</p></div></section>
+      <section class="sec hidden" id="sec-billing"><div class="empty"><div class="ic">💳</div><h3>Facturación</h3><p>Tu suscripción y plan (Stripe). Próximamente.</p></div></section>
+      <section class="sec hidden" id="sec-settings"><div class="empty"><div class="ic">⚙️</div><h3>Ajustes</h3><p>Configuración de tu cuenta y conexiones. Próximamente.</p></div></section>
+
+      </div>
+    </main>
   </div>
 
   <div class="toast" id="toast"></div>
@@ -554,6 +623,17 @@ PANEL_HTML = """<!doctype html>
     function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),4500)}
     function headers(){return {'Content-Type':'application/json'}}  // la sesión va por cookie
     async function logout(){ try{await fetch('/api/logout',{method:'POST'})}catch(e){} window.location='/login'; }
+
+    const TITLES={wa:'Cuentas de WhatsApp',bots:'Bots',templates:'Plantillas',flows:'WhatsApp Flows',
+      analytics:'Analítica',inbox:'Bandeja',contacts:'Contactos',campaigns:'Campañas',billing:'Facturación',settings:'Ajustes'};
+    function showSection(sec){
+      document.querySelectorAll('.sec').forEach(s=>s.classList.add('hidden'));
+      const el=$('sec-'+sec); if(el)el.classList.remove('hidden');
+      document.querySelectorAll('.menu .item').forEach(a=>a.classList.toggle('active', a.dataset.sec===sec));
+      $('secTitle').textContent=TITLES[sec]||'Panel';
+      if(window.innerWidth<=820){ $('side').classList.remove('open'); }
+    }
+    function toggleSide(){ $('side').classList.toggle('open'); }
 
     // --- Embedded Signup de Meta (Facebook Login for Business) ---
     window.addEventListener('message', (event) => {
@@ -620,6 +700,8 @@ PANEL_HTML = """<!doctype html>
       try{
         const res = await fetch('/api/me');
         if(!res.ok){window.location='/login';return}
+        const me = await res.json();
+        if(me.email){ $('userEmail').textContent=me.email; $('ava').textContent=(me.email[0]||'W').toUpperCase(); }
       }catch(e){window.location='/login';return}
       $('app').classList.remove('hidden');
       loadBots(true);

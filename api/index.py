@@ -101,7 +101,8 @@ async def api_logout() -> JSONResponse:
 async def api_me(request: Request) -> JSONResponse:
     if not _is_admin(request):
         return JSONResponse({"error": "no autorizado"}, status_code=401)
-    return JSONResponse({"ok": True})
+    email = auth.verify_session(request.cookies.get(auth.COOKIE_NAME, ""))
+    return JSONResponse({"ok": True, "email": email})
 
 
 @app.get("/panel", response_class=HTMLResponse)
