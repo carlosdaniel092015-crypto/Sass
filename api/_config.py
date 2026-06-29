@@ -39,6 +39,17 @@ N8N_DEFAULT_WORKFLOW_ID = _env("N8N_DEFAULT_WORKFLOW_ID")
 YCLOUD_API_KEY = _env("YCLOUD_API_KEY")
 YCLOUD_FROM_NUMBER = _env("YCLOUD_FROM_NUMBER")
 N8N_INBOUND_WEBHOOK_URL = _env("N8N_INBOUND_WEBHOOK_URL")
+# Endpoint de YCloud que finaliza el onboarding con el code del Embedded Signup.
+# (Confírmalo con YCloud; si queda vacío, la app solo captura los datos.)
+YCLOUD_ONBOARD_ENDPOINT = _env("YCLOUD_ONBOARD_ENDPOINT")
+
+# Meta / Facebook Login for Business — Embedded Signup
+# App de Meta (tipo Business) con productos WhatsApp + Facebook Login for Business.
+# Los config_id los obtienes de tu App de Meta o te los entrega YCloud como partner.
+META_APP_ID = _env("META_APP_ID")
+META_GRAPH_VERSION = _env("META_GRAPH_VERSION", "v21.0")
+META_CONFIG_ID_SIGNUP = _env("META_CONFIG_ID_SIGNUP")            # nuevo WABA / nuevo número
+META_CONFIG_ID_COEXISTENCE = _env("META_CONFIG_ID_COEXISTENCE")  # WhatsApp Business App Coexistence
 
 # Supabase
 SUPABASE_URL = _env("SUPABASE_URL").rstrip("/")

@@ -88,6 +88,44 @@ async def api_create_bot(request: Request) -> JSONResponse:
 
 
 # ----------------------------------------------------------------------
+#  Onboarding de WhatsApp (Embedded Signup de Meta / YCloud)
+# ----------------------------------------------------------------------
+@app.get("/api/whatsapp/config")
+async def whatsapp_config(request: Request) -> JSONResponse:
+    """Expone al frontend los datos públicos del Embedded Signup."""
+    if not _is_admin(request):
+        return JSONResponse({"error": "no autorizado"}, status_code=401)
+    return JSONResponse(
+        {
+            "app_id": cfg.META_APP_ID,
+            "graph_version": cfg.META_GRAPH_VERSION,
+            "config_id_signup": cfg.META_CONFIG_ID_SIGNUP,
+            "config_id_coexistence": cfg.META_CONFIG_ID_COEXISTENCE,
+            "ready": bool(cfg.META_APP_ID and cfg.META_CONFIG_ID_SIGNUP),
+        }
+    )
+
+
+@app.post("/api/whatsapp/onboard")
+async def whatsapp_onboard(request: Request) -> JSONResponse:
+    """Recibe el resultado del Embedded Signup y lo registra en YCloud."""
+    if not _is_admin(request):
+        return JSONResponse({"error": "no autorizado"}, status_code=401)
+    body = await request.json() or {}
+    code = body.get("code", "")
+    waba_id = body.get("waba_id", "")
+    phone_number_id = body.get("phone_number_id", "")
+    kind = body.get("kind", "signup")
+    if not (waba_id or phone_number_id or code):
+        return JSONResponse({"error": "Faltan datos del Embedded Signup"}, status_code=400)
+    try:
+        result = await ycloud.register_waba(code, waba_id, phone_number_id, kind)
+        return JSONResponse({"ok": True, **result})
+    except Exception as exc:  # noqa: BLE001
+        return JSONResponse({"error": str(exc)}, status_code=502)
+
+
+# ----------------------------------------------------------------------
 #  Checkout (suscripción mensual)
 # ----------------------------------------------------------------------
 @app.post("/create-checkout-session")

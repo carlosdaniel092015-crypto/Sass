@@ -43,3 +43,38 @@ async def forward_to_n8n(payload: dict) -> bool:
         resp = await client.post(cfg.N8N_INBOUND_WEBHOOK_URL, json=payload)
         resp.raise_for_status()
         return True
+
+
+async def register_waba(
+    code: str, waba_id: str, phone_number_id: str, kind: str = "signup"
+) -> dict:
+    """Finaliza el onboarding del Embedded Signup en YCloud.
+
+    Recibe el `code` que devuelve Meta tras el Embedded Signup (Facebook Login
+    for Business) junto con el `waba_id` y `phone_number_id`, y los envía a
+    YCloud para vincular la cuenta de WhatsApp del cliente.
+
+    Si `YCLOUD_ONBOARD_ENDPOINT` no está configurado, solo devuelve los datos
+    capturados (modo captura), sin llamar a YCloud.
+    """
+    captured = {
+        "kind": kind,
+        "waba_id": waba_id,
+        "phone_number_id": phone_number_id,
+        "has_code": bool(code),
+    }
+    if not (cfg.YCLOUD_ONBOARD_ENDPOINT and cfg.YCLOUD_API_KEY):
+        return {"registered": False, "captured": captured,
+                "note": "Configura YCLOUD_ONBOARD_ENDPOINT y YCLOUD_API_KEY para registrar en YCloud."}
+    payload = {
+        "code": code,
+        "wabaId": waba_id,
+        "phoneNumberId": phone_number_id,
+        "onboardingType": kind,
+    }
+    async with httpx.AsyncClient(timeout=30) as client:
+        resp = await client.post(
+            cfg.YCLOUD_ONBOARD_ENDPOINT, headers=_headers(), json=payload
+        )
+        resp.raise_for_status()
+        return {"registered": True, "captured": captured, "ycloud": resp.json()}

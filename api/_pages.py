@@ -414,6 +414,27 @@ PANEL_HTML = """<!doctype html>
 
     <!-- App -->
     <div id="app" class="hidden">
+
+      <div class="box">
+        <h2>📲 Conectar WhatsApp</h2>
+        <p class="meta" style="color:var(--muted);margin-bottom:16px">
+          Conecta la cuenta de WhatsApp Business del cliente con el Embedded Signup de Meta.
+          Elige crear un número nuevo o usar la app existente (coexistencia).
+        </p>
+        <div id="waNotReady" class="hidden" style="color:#fca5a5;font-size:14px;margin-bottom:12px">
+          ⚠️ Falta configurar Meta (META_APP_ID y META_CONFIG_ID_SIGNUP).
+        </div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap">
+          <button class="btn btn-primary" id="btnSignup" onclick="launchSignup('signup')">
+            ➕ Nuevo número (crear WABA)
+          </button>
+          <button class="btn btn-ghost" id="btnCoex" onclick="launchSignup('coexistence')">
+            📱 Usar app existente (Coexistencia)
+          </button>
+        </div>
+        <div id="waResult" style="margin-top:16px"></div>
+      </div>
+
       <div class="box">
         <h2>➕ Crear bot nuevo</h2>
         <div class="field">
@@ -439,15 +460,77 @@ PANEL_HTML = """<!doctype html>
 
   <script>
     let TOKEN = localStorage.getItem('wabu_token') || '';
+    let META = null;            // config del Embedded Signup
+    let sessionInfo = {};       // waba_id / phone_number_id que envía Meta
     const $ = id => document.getElementById(id);
     function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),4500)}
     function headers(){return {'Content-Type':'application/json','X-Admin-Token':TOKEN}}
+
+    // --- Embedded Signup de Meta (Facebook Login for Business) ---
+    window.addEventListener('message', (event) => {
+      if (!String(event.origin).endsWith('facebook.com')) return;
+      try {
+        const data = JSON.parse(event.data);
+        if (data.type === 'WA_EMBEDDED_SIGNUP') {
+          // data.data: { phone_number_id, waba_id, ... }
+          sessionInfo = data.data || {};
+        }
+      } catch (e) {}
+    });
+
+    function initFB(){
+      if(!META || !META.app_id || window.FB) return;
+      window.fbAsyncInit = function(){
+        FB.init({ appId: META.app_id, autoLogAppEvents:true, xfbml:true, version: META.graph_version });
+      };
+      const s=document.createElement('script');
+      s.async=true;s.defer=true;s.src='https://connect.facebook.net/en_US/sdk.js';
+      document.body.appendChild(s);
+    }
+
+    function launchSignup(kind){
+      if(!window.FB){toast('Meta aún no está listo. Revisa META_APP_ID.');return}
+      const config_id = kind==='coexistence' ? META.config_id_coexistence : META.config_id_signup;
+      if(!config_id){toast('Falta el config_id para '+kind);return}
+      const extras = { setup:{}, sessionInfoVersion:'3' };
+      if(kind==='coexistence') extras.featureType='whatsapp_business_app_onboarding';
+      sessionInfo = {};
+      FB.login(function(response){
+        const code = response && response.authResponse && response.authResponse.code;
+        if(!code){toast('Conexión cancelada');return}
+        onboard(code, kind);
+      }, { config_id, response_type:'code', override_default_response_type:true, extras });
+    }
+
+    async function onboard(code, kind){
+      $('waResult').innerHTML='⏳ Registrando cuenta…';
+      try{
+        const res = await fetch('/api/whatsapp/onboard',{method:'POST',headers:headers(),
+          body:JSON.stringify({code, waba_id:sessionInfo.waba_id, phone_number_id:sessionInfo.phone_number_id, kind})});
+        const data = await res.json();
+        if(res.ok){
+          $('waResult').innerHTML = `✅ WhatsApp conectado (${kind==='coexistence'?'coexistencia':'nuevo número'}).<br>`+
+            `WABA: <code>${sessionInfo.waba_id||'—'}</code><br>Phone ID: <code>${sessionInfo.phone_number_id||'—'}</code>`+
+            (data.registered? '' : '<br><span class="meta">⚠️ '+(data.note||'Pendiente registrar en YCloud')+'</span>');
+        }else{$('waResult').innerHTML='';toast(data.error||'No se pudo conectar')}
+      }catch(e){$('waResult').innerHTML='';toast('Error de conexión')}
+    }
+
+    async function loadMeta(){
+      try{
+        const res = await fetch('/api/whatsapp/config',{headers:headers()});
+        if(!res.ok) return;
+        META = await res.json();
+        if(META.ready){initFB();}
+        else{$('waNotReady').classList.remove('hidden');$('btnSignup').disabled=true;$('btnCoex').disabled=true;}
+      }catch(e){}
+    }
 
     async function login(){
       TOKEN = $('token').value.trim();
       if(!TOKEN){toast('Escribe el token');return}
       const ok = await loadBots(true);
-      if(ok){localStorage.setItem('wabu_token',TOKEN);$('loginBox').classList.add('hidden');$('app').classList.remove('hidden');}
+      if(ok){localStorage.setItem('wabu_token',TOKEN);$('loginBox').classList.add('hidden');$('app').classList.remove('hidden');loadMeta();}
       else{toast('Token inválido o n8n no configurado');}
     }
 
@@ -484,7 +567,7 @@ PANEL_HTML = """<!doctype html>
     }
 
     // Auto-login si ya hay token guardado
-    if(TOKEN){loadBots(true).then(ok=>{if(ok){$('loginBox').classList.add('hidden');$('app').classList.remove('hidden')}})}
+    if(TOKEN){loadBots(true).then(ok=>{if(ok){$('loginBox').classList.add('hidden');$('app').classList.remove('hidden');loadMeta();}})}
   </script>
 </body>
 </html>"""
