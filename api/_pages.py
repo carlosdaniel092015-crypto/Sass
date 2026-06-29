@@ -444,6 +444,21 @@ PANEL_HTML = """<!doctype html>
     .tag.off{background:rgba(148,163,184,.15);color:var(--muted)}
     .hidden{display:none}
     code{background:var(--bg);padding:2px 7px;border-radius:6px;font-size:13px;color:#86efac;word-break:break-all}
+    /* Tarjetas de conexión estilo YCloud */
+    .wa-cards{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+    @media(max-width:820px){.wa-cards{grid-template-columns:1fr}}
+    .wa-card{display:flex;border:1px solid var(--line);border-radius:16px;overflow:hidden;
+      background:var(--bg2);transition:.2s}
+    .wa-card:hover{border-color:rgba(34,197,94,.45);transform:translateY(-3px)}
+    .wa-card .pic{width:150px;flex:none;display:grid;place-items:center;font-size:46px;
+      background:linear-gradient(150deg,#0b3b2e,#075e54 60%,#128c7e)}
+    .wa-card.alt .pic{background:linear-gradient(150deg,#1e293b,#075e54)}
+    .wa-card .body{padding:22px;display:flex;flex-direction:column;gap:8px}
+    .wa-card .body h3{font-size:17px}
+    .wa-card .body p{color:var(--muted);font-size:14px;flex:1}
+    .wa-card .body .btn{align-self:flex-start;margin-top:8px}
+    @media(max-width:520px){.wa-card{flex-direction:column}.wa-card .pic{width:100%;height:120px}}
+    .faq2{display:flex;flex-direction:column;gap:10px}
   </style>
 </head>
 <body>
@@ -460,23 +475,53 @@ PANEL_HTML = """<!doctype html>
     <div id="app" class="hidden">
 
       <div class="box">
-        <h2>📲 Conectar WhatsApp</h2>
-        <p class="meta" style="color:var(--muted);margin-bottom:16px">
-          Conecta la cuenta de WhatsApp Business del cliente con el Embedded Signup de Meta.
-          Elige crear un número nuevo o usar la app existente (coexistencia).
+        <h2>📲 Cuentas de WhatsApp</h2>
+        <p class="meta" style="color:var(--muted);margin-bottom:18px">
+          Conecta una cuenta de WhatsApp Business (WABA) y configura su número.
         </p>
-        <div id="waNotReady" class="hidden" style="color:#fca5a5;font-size:14px;margin-bottom:12px">
-          ⚠️ Falta configurar Meta (META_APP_ID y META_CONFIG_ID_SIGNUP).
+        <div id="waNotReady" class="hidden" style="color:#fca5a5;font-size:14px;margin-bottom:14px">
+          ⚠️ Falta configurar Meta (META_APP_ID y META_CONFIG_ID_SIGNUP) para activar la conexión.
         </div>
-        <div style="display:flex;gap:12px;flex-wrap:wrap">
-          <button class="btn btn-primary" id="btnSignup" onclick="launchSignup('signup')">
-            ➕ Nuevo número (crear WABA)
-          </button>
-          <button class="btn btn-ghost" id="btnCoex" onclick="launchSignup('coexistence')">
-            📱 Usar app existente (Coexistencia)
-          </button>
+
+        <div class="wa-cards">
+          <div class="wa-card">
+            <div class="pic">💬</div>
+            <div class="body">
+              <h3>WhatsApp Business API</h3>
+              <p>Para empresas que se comunican con sus clientes a gran escala mediante
+                 acceso programático. Crea una WABA y un número nuevo.</p>
+              <button class="btn btn-primary" id="btnSignup" onclick="launchSignup('signup')">Comenzar</button>
+            </div>
+          </div>
+
+          <div class="wa-card alt">
+            <div class="pic">📱</div>
+            <div class="body">
+              <h3>WhatsApp Business App Coexistence</h3>
+              <p>Conecta usando tu cuenta y número existentes de la app de WhatsApp Business.
+                 Escaneas un QR y conservas tu número.</p>
+              <button class="btn btn-ghost" id="btnCoex" onclick="launchSignup('coexistence')">Comenzar</button>
+            </div>
+          </div>
         </div>
-        <div id="waResult" style="margin-top:16px"></div>
+
+        <div id="waResult" style="margin-top:18px"></div>
+
+        <h2 style="margin:30px 0 14px">Preguntas frecuentes</h2>
+        <div class="faq2">
+          <details><summary>¿Cuál es la diferencia entre WhatsApp Business API y la App?</summary>
+            <p>La API permite automatización, chatbots y envíos masivos a gran escala de forma programática.
+               La app móvil es para uso manual. Con Coexistence puedes usar ambas en el mismo número.</p></details>
+          <details><summary>¿Qué son la cuenta personal de Facebook, la WABA y el BM?</summary>
+            <p>Tu cuenta de Facebook autoriza el acceso; el Business Manager (BM) agrupa tus activos de negocio;
+               y la WABA (WhatsApp Business Account) es la cuenta donde vive tu número de WhatsApp.</p></details>
+          <details><summary>Ya tengo WABA y números en otro BSP, ¿puedo migrar?</summary>
+            <p>Sí. Puedes migrar tu número a esta plataforma desde otro proveedor siguiendo el flujo de
+               conexión; el número conserva su historial de calidad.</p></details>
+          <details><summary>¿La Coexistence tiene límites?</summary>
+            <p>Sí: throughput fijo de 5 mensajes/segundo y no sincroniza mensajes con más de 14 días.
+               Los mensajes enviados desde la app son gratis; los de la API siguen el precio estándar.</p></details>
+        </div>
       </div>
 
       <div class="box">
