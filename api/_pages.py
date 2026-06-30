@@ -15,6 +15,11 @@ _HEAD = """
       --txt:#e8ecf5; --muted:#94a3c4; --brand:#22c55e; --brand2:#14b8a6;
       --accent:#6366f1;
     }
+    [data-theme="light"]{
+      --bg:#f6f8fb; --bg2:#eef2f7; --panel:#ffffff; --line:#e2e8f0;
+      --txt:#0f172a; --muted:#64748b; --brand:#16a34a; --brand2:#0d9488;
+      --accent:#6366f1;
+    }
     *{box-sizing:border-box;margin:0;padding:0}
     html{scroll-behavior:smooth}
     body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--txt);
@@ -580,6 +585,36 @@ PANEL_HTML = """<!doctype html>
     .int .nm{font-size:14px;font-weight:600}.int .ds{font-size:12px;color:var(--muted)}
     .cfgcards{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
     @media(max-width:760px){.cfgcards{grid-template-columns:1fr}}
+    /* Topbar tools */
+    .tbtn{background:rgba(255,255,255,.05);border:1px solid var(--line);color:var(--muted);
+      border-radius:9px;padding:8px 12px;cursor:pointer;font-size:13px;display:inline-flex;align-items:center;gap:7px}
+    .tbtn:hover{color:var(--txt);background:rgba(255,255,255,.1)}
+    .kbd{border:1px solid var(--line);border-radius:5px;padding:0 5px;font-size:11px;color:var(--muted);background:var(--bg)}
+    /* Avatar dropdown */
+    .avwrap{position:relative}
+    .avtrigger{display:flex;align-items:center;gap:8px;cursor:pointer;background:none;border:0;color:var(--txt)}
+    .avtrigger .av2{width:32px;height:32px;border-radius:50%;background:linear-gradient(120deg,var(--brand),var(--brand2));
+      color:#03130b;display:grid;place-items:center;font-weight:800}
+    .avmenu{position:absolute;right:0;top:46px;background:var(--panel);border:1px solid var(--line);
+      border-radius:12px;min-width:200px;padding:6px;display:none;z-index:40;box-shadow:0 20px 40px -16px rgba(0,0,0,.6)}
+    .avmenu.open{display:block}
+    .avmenu .mi{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;color:var(--txt);
+      font-size:14px;cursor:pointer}
+    .avmenu .mi:hover{background:rgba(255,255,255,.06)}
+    .avmenu .mhead{padding:10px 12px;border-bottom:1px solid var(--line);margin-bottom:4px}
+    .avmenu .mhead .e{font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    /* Command palette ⌘K */
+    .cmdk-bd{position:fixed;inset:0;background:rgba(3,6,14,.6);backdrop-filter:blur(4px);
+      display:none;align-items:flex-start;justify-content:center;padding-top:14vh;z-index:200}
+    .cmdk-bd.open{display:flex}
+    .cmdk{background:var(--panel);border:1px solid var(--line);border-radius:16px;width:min(560px,92vw);
+      overflow:hidden;box-shadow:0 30px 70px -20px rgba(0,0,0,.7)}
+    .cmdk input{width:100%;border:0;border-bottom:1px solid var(--line);background:transparent;color:var(--txt);
+      padding:16px 18px;font-size:16px;font-family:inherit;outline:none}
+    .cmdk-list{max-height:340px;overflow:auto;padding:8px}
+    .cmdk-it{display:flex;align-items:center;gap:11px;padding:11px 12px;border-radius:9px;cursor:pointer;font-size:14.5px}
+    .cmdk-it.act{background:rgba(34,197,94,.14);color:#86efac}
+    .cmdk-empty{padding:24px;text-align:center;color:var(--muted);font-size:14px}
   </style>
 </head>
 <body>
@@ -615,7 +650,18 @@ PANEL_HTML = """<!doctype html>
       <header class="topbar">
         <button class="burger" onclick="toggleSide()">☰</button>
         <h1 id="secTitle">Dashboard</h1>
-        <a href="/" class="btn btn-ghost" style="padding:9px 14px">← Sitio</a>
+        <button class="tbtn" onclick="cmdkOpen()">🔎 Buscar <span class="kbd">⌘K</span></button>
+        <div class="avwrap">
+          <button class="avtrigger" id="avTrigger" onclick="toggleAv(event)">
+            <span class="av2" id="av2">W</span>
+          </button>
+          <div class="avmenu" id="avMenu">
+            <div class="mhead"><div class="e" id="avEmail">—</div></div>
+            <div class="mi" onclick="location.href='/'">🌐 Ver sitio</div>
+            <div class="mi" onclick="showSection('wa');closeAv()">🟢 Conectar WhatsApp</div>
+            <div class="mi" onclick="logout()">🚪 Cerrar sesión</div>
+          </div>
+        </div>
       </header>
       <div class="content">
 
@@ -806,6 +852,14 @@ PANEL_HTML = """<!doctype html>
     </main>
   </div>
 
+  <!-- Paleta de comandos ⌘K -->
+  <div class="cmdk-bd" id="cmdkBd">
+    <div class="cmdk">
+      <input id="cmdkInput" placeholder="Buscar sección o acción…" autocomplete="off">
+      <div class="cmdk-list" id="cmdkList"></div>
+    </div>
+  </div>
+
   <div class="toast" id="toast"></div>
 
   <script>
@@ -828,6 +882,61 @@ PANEL_HTML = """<!doctype html>
       if(window.innerWidth<=820){ $('side').classList.remove('open'); }
     }
     function toggleSide(){ $('side').classList.toggle('open'); }
+
+    // --- Menú de avatar ---
+    function toggleAv(e){ e.stopPropagation(); $('avMenu').classList.toggle('open'); }
+    function closeAv(){ $('avMenu').classList.remove('open'); }
+    document.addEventListener('click', (e)=>{ const w=$('avMenu'); if(w && w.classList.contains('open') && !e.target.closest('.avwrap')) closeAv(); });
+
+    // --- Paleta de comandos (⌘K / Ctrl+K) ---
+    let cmdkItems=[], cmdkActive=0;
+    function buildCmdk(){
+      cmdkItems = Array.from(document.querySelectorAll('.menu .item')).map(a=>({
+        label: a.textContent.trim().replace(/\\s+/g,' '),
+        sec: a.dataset.sec
+      }));
+      cmdkItems.push({label:'🌗 Cambiar tema (claro/oscuro)', action:()=>toggleTheme()});
+      cmdkItems.push({label:'🌐 Ver el sitio público', action:()=>location.href='/'});
+      cmdkItems.push({label:'🚪 Cerrar sesión', action:()=>logout()});
+    }
+    function cmdkOpen(){ buildCmdk(); $('cmdkBd').classList.add('open'); cmdkActive=0;
+      const i=$('cmdkInput'); i.value=''; setTimeout(()=>i.focus(),30); cmdkRender(''); }
+    function cmdkClose(){ $('cmdkBd').classList.remove('open'); }
+    function cmdkRender(q){
+      q=(q||'').toLowerCase().trim();
+      const list = q ? cmdkItems.filter(it=>it.label.toLowerCase().includes(q)) : cmdkItems;
+      cmdkActive = Math.min(cmdkActive, Math.max(0,list.length-1));
+      const el=$('cmdkList');
+      if(!list.length){ el.innerHTML='<div class="cmdk-empty">Sin resultados</div>'; cmdkVisible=[]; return; }
+      cmdkVisible=list;
+      el.innerHTML=list.map((it,i)=>`<div class="cmdk-it${i===cmdkActive?' act':''}" data-i="${i}">${it.label}</div>`).join('');
+      el.querySelectorAll('.cmdk-it').forEach(d=>{
+        d.onmouseenter=()=>{cmdkActive=+d.dataset.i; cmdkPaint();};
+        d.onclick=()=>cmdkRun(+d.dataset.i);
+      });
+    }
+    let cmdkVisible=[];
+    function cmdkPaint(){ $('cmdkList').querySelectorAll('.cmdk-it').forEach((d,i)=>d.classList.toggle('act',i===cmdkActive)); }
+    function cmdkRun(i){ const it=cmdkVisible[i]; if(!it)return; cmdkClose(); if(it.action)it.action(); else if(it.sec)showSection(it.sec); }
+    $('cmdkInput').addEventListener('input', e=>{ cmdkActive=0; cmdkRender(e.target.value); });
+    $('cmdkBd').addEventListener('click', e=>{ if(e.target===$('cmdkBd')) cmdkClose(); });
+    document.addEventListener('keydown', e=>{
+      const mod=e.metaKey||e.ctrlKey;
+      if(mod && e.key.toLowerCase()==='k'){ e.preventDefault(); $('cmdkBd').classList.contains('open')?cmdkClose():cmdkOpen(); return; }
+      if(!$('cmdkBd').classList.contains('open')) return;
+      if(e.key==='Escape'){cmdkClose();}
+      else if(e.key==='ArrowDown'){e.preventDefault(); cmdkActive=(cmdkActive+1)%cmdkVisible.length; cmdkPaint();}
+      else if(e.key==='ArrowUp'){e.preventDefault(); cmdkActive=(cmdkActive-1+cmdkVisible.length)%cmdkVisible.length; cmdkPaint();}
+      else if(e.key==='Enter'){e.preventDefault(); cmdkRun(cmdkActive);}
+    });
+
+    // --- Tema claro/oscuro ---
+    function toggleTheme(){
+      const cur=document.documentElement.getAttribute('data-theme')==='light'?'dark':'light';
+      document.documentElement.setAttribute('data-theme',cur);
+      try{localStorage.setItem('wabu_theme',cur);}catch(_){}
+      toast(cur==='light'?'☀️ Tema claro':'🌙 Tema oscuro');
+    }
 
     // --- Embedded Signup de Meta (Facebook Login for Business) ---
     window.addEventListener('message', (event) => {
@@ -895,7 +1004,9 @@ PANEL_HTML = """<!doctype html>
         const res = await fetch('/api/me');
         if(!res.ok){window.location='/login';return}
         const me = await res.json();
-        if(me.email){ $('userEmail').textContent=me.email; $('ava').textContent=(me.email[0]||'W').toUpperCase();
+        if(me.email){ const ini=(me.email[0]||'W').toUpperCase();
+          $('userEmail').textContent=me.email; $('ava').textContent=ini;
+          const a2=$('av2'); if(a2)a2.textContent=ini; const ae=$('avEmail'); if(ae)ae.textContent=me.email;
           const nm=me.email.split('@')[0]; const g=$('greet'); if(g)g.textContent='Hola, '+nm+' 👋'; }
       }catch(e){window.location='/login';return}
       $('app').classList.remove('hidden');
@@ -935,7 +1046,8 @@ PANEL_HTML = """<!doctype html>
       btn.disabled=false; btn.textContent='Crear bot en n8n';
     }
 
-    // Al cargar, verifica sesión y muestra el panel (o redirige al login)
+    // Aplica tema guardado y verifica sesión
+    try{const t=localStorage.getItem('wabu_theme'); if(t)document.documentElement.setAttribute('data-theme',t);}catch(_){}
     gate();
   </script>
 </body>
